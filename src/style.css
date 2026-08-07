@@ -197,6 +197,7 @@ body {
   align-content: center;
   flex: 1;
   gap: clamp(12px, 2.5vh, 24px);
+  min-height: 0;
 }
 
 .engineer-card {
@@ -296,9 +297,123 @@ body {
   font-size: 0.86rem;
 }
 
+.engineer-panel__acknowledgement {
+  margin-top: 12px;
+  padding: 9px 12px;
+  border: 1px solid rgb(113 232 192 / 35%);
+  border-left: 3px solid #71e8c0;
+  border-radius: 3px;
+  color: #c9ffe9;
+  background: rgb(20 86 68 / 24%);
+  font-size: clamp(0.78rem, 1.2vw, 0.92rem);
+  font-weight: 760;
+  letter-spacing: 0.035em;
+}
+
+.engineer-intent {
+  display: grid;
+  gap: 11px;
+  margin-top: 14px;
+  padding: clamp(13px, 1.8vw, 18px);
+  border: 1px solid rgb(143 182 192 / 18%);
+  border-radius: 4px;
+  background: rgb(2 9 15 / 50%);
+  transition: border-color 140ms ease, background 140ms ease;
+}
+
+.engineer-intent.is-available {
+  border-color: rgb(89 220 229 / 70%);
+  background: rgb(19 76 84 / 28%);
+}
+
+.engineer-intent__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.engineer-intent__heading,
+.engineer-intent__plan-label {
+  color: #8497a3;
+  font-size: 0.66rem;
+  font-weight: 850;
+  letter-spacing: 0.13em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.engineer-intent__heading {
+  margin: 0;
+}
+
+.engineer-intent__plan {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.engineer-intent__plan-value {
+  min-width: 50px;
+  color: #f7fcff;
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-align: right;
+}
+
+.engineer-intent__controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.engineer-intent__button {
+  min-height: 45px;
+  padding: 9px 8px;
+  border: 1px solid #4e6974;
+  border-radius: 4px;
+  color: #9babb3;
+  background: #111c23;
+  cursor: pointer;
+  font-size: clamp(0.72rem, 1vw, 0.85rem);
+  font-weight: 900;
+  letter-spacing: 0.07em;
+  transition:
+    color 130ms ease,
+    border-color 130ms ease,
+    background 130ms ease;
+}
+
+.engineer-intent.is-available .engineer-intent__button:not(:disabled) {
+  border-color: #56d8e1;
+  color: #eafdff;
+  background: #12313a;
+}
+
+.engineer-intent__button:not(:disabled):hover {
+  border-color: #b5fbff;
+  background: #194650;
+}
+
+.engineer-intent__button.is-selected {
+  border-color: #74ecc3;
+  color: #071512;
+  background: #74ecc3;
+}
+
+.engineer-intent__button:disabled:not(.is-selected) {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.engineer-intent__button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
 @media (max-width: 760px) {
   #app.prototype-shell {
-    grid-template-rows: minmax(0, 72fr) minmax(190px, 28fr);
+    grid-template-rows: minmax(0, 65fr) minmax(270px, 35fr);
     grid-template-columns: 1fr;
   }
 
@@ -330,6 +445,22 @@ body {
     align-content: stretch;
     gap: 7px;
     padding-top: 9px;
+  }
+
+  .engineer-panel__acknowledgement {
+    margin-top: 7px;
+    padding-block: 6px;
+  }
+
+  .engineer-intent {
+    gap: 7px;
+    margin-top: 8px;
+    padding: 9px;
+  }
+
+  .engineer-intent__button {
+    min-height: 39px;
+    padding-block: 7px;
   }
 
   .engineer-card {

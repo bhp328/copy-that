@@ -3,6 +3,7 @@ import type {
   CornerResult,
   TimingState,
 } from './cornerGameplay';
+import type { IntentPlan } from './intentCall';
 import type { DefenseSide } from './overtakeScenario';
 
 export type Language = 'en' | 'ko';
@@ -22,6 +23,9 @@ export interface UiText {
   opponent: string;
   defending: Record<DefenseSide, string>;
   gap: string;
+  intentCall: string;
+  plan: string;
+  intent: Record<IntentPlan, string>;
   commandLabel: string;
   command: {
     lateBrake: string;
@@ -67,6 +71,12 @@ export const UI_TEXT = {
       outside: 'DEFENDING OUTSIDE',
     },
     gap: 'GAP',
+    intentCall: 'INTENT CALL',
+    plan: 'PLAN',
+    intent: {
+      inside: 'INSIDE',
+      outside: 'OUTSIDE',
+    },
     commandLabel: 'Engineer command',
     command: {
       lateBrake: 'LATE BRAKE',
@@ -122,6 +132,12 @@ export const UI_TEXT = {
       outside: '아웃사이드 방어 중',
     },
     gap: '갭',
+    intentCall: '전술 지시',
+    plan: '플랜',
+    intent: {
+      inside: '인사이드',
+      outside: '아웃사이드',
+    },
     commandLabel: '엔지니어 지시',
     command: {
       lateBrake: '늦게 제동',

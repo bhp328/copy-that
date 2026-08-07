@@ -1,7 +1,8 @@
 import * as THREE from 'three';
-import { CarController } from './carController';
+import { CarController, type DrivingModifiers } from './carController';
 import { CornerGameplayController } from './cornerGameplay';
 import { EngineerPanel } from './engineerPanel';
+import { IntentCallController, type IntentPlan } from './intentCall';
 import { OvertakeScenarioController } from './overtakeScenario';
 import { createRaceTrack } from './track';
 import './style.css';
@@ -70,11 +71,27 @@ const overtakeScenario = new OvertakeScenarioController(
 );
 scene.add(overtakeScenario.opponent);
 
+const intentCalls = new IntentCallController(track.gameplayCorner);
+
 const engineerPanel = new EngineerPanel({
   parent: app,
   driverFeedLabel: feedLabel,
   driverFeedStatus: feedStatus,
+  onIntentCall: handleIntentCall,
 });
+
+function handleIntentCall(plan: IntentPlan): void {
+  if (!intentCalls.issueIntent(plan, car.totalProgress)) {
+    return;
+  }
+
+  const intent = intentCalls.snapshot;
+  engineerPanel.setIntentState(
+    intent.isAvailable,
+    intent.committedPlan,
+    intent.acknowledgement,
+  );
+}
 
 type CameraMode = 'driver' | 'chase';
 let cameraMode: CameraMode = 'driver';
@@ -156,6 +173,13 @@ engineerPanel.setNextCorner(
 );
 engineerPanel.setDefenseSide(initialScenario.defenseSide);
 engineerPanel.setGapSeconds(initialScenario.gapSeconds);
+intentCalls.update(0, car.totalProgress);
+const initialIntent = intentCalls.snapshot;
+engineerPanel.setIntentState(
+  initialIntent.isAvailable,
+  initialIntent.committedPlan,
+  initialIntent.acknowledgement,
+);
 resize();
 updateCamera(0, true);
 
@@ -169,9 +193,17 @@ renderer.setAnimationLoop(() => {
   );
   previousFrameTime = currentFrameTime;
 
-  const drivingModifiers = automaticCornerDriving.update(
+  const automaticModifiers = automaticCornerDriving.update(
     car.totalProgress,
     car.targetSpeedKmh,
+  );
+  const preparationModifiers = intentCalls.update(
+    deltaSeconds,
+    car.totalProgress,
+  );
+  const drivingModifiers = combineDrivingModifiers(
+    automaticModifiers,
+    preparationModifiers,
   );
   car.update(deltaSeconds, drivingModifiers);
 
@@ -182,7 +214,26 @@ renderer.setAnimationLoop(() => {
   );
   engineerPanel.setDefenseSide(scenario.defenseSide);
   engineerPanel.setGapSeconds(scenario.gapSeconds);
+  const intent = intentCalls.snapshot;
+  engineerPanel.setIntentState(
+    intent.isAvailable,
+    intent.committedPlan,
+    intent.acknowledgement,
+  );
 
   updateCamera(deltaSeconds);
   renderer.render(scene, camera);
 });
+
+function combineDrivingModifiers(
+  automatic: DrivingModifiers,
+  preparation: DrivingModifiers,
+): DrivingModifiers {
+  const automaticOffset = automatic.lateralOffset ?? 0;
+  const preparationOffset = preparation.lateralOffset ?? 0;
+
+  return {
+    ...automatic,
+    lateralOffset: automaticOffset + preparationOffset,
+  };
+}

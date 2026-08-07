@@ -1,5 +1,158 @@
 # Codex Log
 
+## 2026-08-07 - HUMAN PLAYTEST / DESIGN DECISION: Step 2 intent structure approved
+
+### Decision
+
+The INSIDE / OUTSIDE communication structure is approved for continued testing,
+with information-design and spatial-readability corrections required before an
+execution cue is added.
+
+### Human playtest findings
+
+- INSIDE / OUTSIDE intent calls, Driver acknowledgement, and preparation behavior
+  function correctly.
+- The preparation movement exists but is difficult to feel clearly from the
+  Driver Feed. The approach corridor is narrow, straight-line staging is limited,
+  and the onboard view has weak lateral-position reference.
+- Explicit `DEFENDING INSIDE` / `DEFENDING OUTSIDE` text caused the player to
+  concentrate on the Engineer Panel, read an interpreted answer, and immediately
+  prepare the opposite lane. The panel currently over-explains the tactical
+  situation instead of presenting raw information for judgment.
+- The Driver Feed also makes the opponent's defensive side too difficult to
+  recognize independently. Information asymmetry should give the Engineer earlier
+  and clearer context, not make the Driver Feed unreadable.
+- Positive result: after calling an intent and watching the Driver prepare, the
+  closing cars created a strong desire for an execution command. The player said,
+  “I want to press NOW already.” This is useful anticipation evidence, not approval
+  to implement NOW yet.
+
+### Active hypothesis
+
+Continue testing the intended sequence:
+
+`information -> judgment -> intent -> acknowledgement -> preparation -> future execution cue`
+
+Step 2.5 will correct the information and spatial presentation before any
+execution cue or overtake outcome is implemented. Preserve the rule: **Driver can
+save the car. He cannot save the Engineer's decision.**
+
+## 2026-08-07 - Step 2: INSIDE / OUTSIDE intent-call prototype
+
+### Step 1 approval and checkpoint
+
+- The human game director approved the Driver Feed, Engineer Panel, and
+  deterministic opponent-defense foundation as useful.
+- That exact reviewed foundation was preserved before Step 2 at commit
+  `5f4926cdd31870deb23a4bd184a41665655ad039` with message
+  `Prototype: driver feed and overtake scenario foundation`.
+- The rejected TTC / LATE BRAKE experiment remains historical source only and was
+  not revived.
+
+### Step 2 goal
+
+Test only whether INSIDE / OUTSIDE feels like an Engineer communicating a tactical
+plan to a skilled Driver, followed by a visible acknowledgement and preparation.
+This iteration intentionally stops before execution, success, failure, or timing.
+
+### Intent-call implementation
+
+- Added exactly two active Engineer calls: INSIDE and OUTSIDE.
+- Both buttons are disabled outside the staged overtake approach. During the
+  approach they become available together; accepting one records and locks one
+  plan for that occurrence, preventing command spamming or plan changes.
+- The Driver immediately acknowledges with temporary text: `Copy. Inside.` or
+  `Copy. Outside.` The compact Engineer panel retains the committed PLAN after the
+  acknowledgement disappears.
+- The opponent defense remains independent. It continues alternating INSIDE /
+  OUTSIDE by occurrence and never reads or reacts to the Engineer's chosen plan.
+- No correct/incorrect assessment, hidden offset, timing answer, outcome, score,
+  collision, pass, or execution cue is shown or calculated.
+
+### Preparation versus direct steering
+
+- A call does not teleport or instantly push the car sideways. A small response
+  delay follows acknowledgement, then the Driver smoothly interpolates toward a
+  stable attack-setup corridor while retaining the automatic speed and corner
+  baseline.
+- The scripted opponent always remains ahead, so preparation cannot accidentally
+  execute an overtake.
+- The plan is locked even when it places the Driver behind the defended lane:
+  **Driver can save the car. He cannot save the Engineer's decision.**
+
+### Right-corner geometry mapping
+
+- CarController's track-relative lateral basis points toward visual track-left on
+  this right-hander.
+- INSIDE preparation therefore uses the negative basis direction, moving the car
+  toward the physical inside/right corridor.
+- OUTSIDE uses the positive basis direction, moving toward the physical
+  outside/left corridor. No world-space left/right assumption is used.
+
+### Reset and repeatability
+
+- After the staged recovery marker, the committed intent and acknowledgement are
+  cleared, the Driver smoothly returns toward the baseline lane, and the controls
+  wait for the next approach window.
+- This supports A+INSIDE, A+OUTSIDE, B+INSIDE, and B+OUTSIDE across repeated laps
+  without refreshing and without changing the deterministic opponent sequence.
+
+### Files changed
+
+- `src/intentCall.ts` - per-occurrence availability, commitment, acknowledgement,
+  smooth track-relative preparation, and reset state.
+- `src/main.ts` - combines automatic corner driving with the preparation modifier
+  and connects intent state to the panel.
+- `src/engineerPanel.ts` - two gated intent buttons, compact PLAN readout, and
+  temporary Driver acknowledgement.
+- `src/localization.ts` - English/Korean labels for the intent UI and plan names.
+- `src/style.css` - compact intent controls, availability/selection states, radio
+  acknowledgement, and narrow-screen accommodation.
+- `docs/codex-log.md` - this Step 2 implementation and playtest record.
+
+### Commands and tests run
+
+- Created and verified the approved Step 1 Git checkpoint before editing Step 2.
+- `npm run build` (TypeScript and Vite production build).
+- Browser-tested disabled controls outside the approach, both controls becoming
+  available during the approach, immediate acknowledgement, one-call locking,
+  persistent PLAN feedback, and reset on subsequent occurrences.
+- Tested without refreshing: defending INSIDE + INSIDE, defending OUTSIDE +
+  INSIDE, defending INSIDE + OUTSIDE, and defending OUTSIDE + OUTSIDE.
+- Visually confirmed smooth delayed preparation in both physical corridors, the
+  opponent remaining ahead, and the opponent defense/label staying independent of
+  the selected plan.
+- Verified the 75/25 Driver Feed layout, NORMAL source baseline, English/Korean,
+  exactly two intent buttons, no old gameplay HUD, no outcome/timing state in the
+  active DOM, and zero browser runtime warnings or errors.
+
+### Problems encountered and solutions
+
+- The first compile identified that the nullable committed plan was not narrowed
+  across a derived boolean. The active plan is now captured locally before target
+  calculation, preserving strict TypeScript safety without a non-null assertion.
+- Vite retains its existing non-blocking advisory for the bundled Three.js chunk
+  being above 500 kB.
+
+### Manual playtest instructions
+
+Run the prototype and wait for the two intent buttons to activate on approach.
+Test this four-occurrence sequence without refreshing:
+
+1. OPPONENT DEFENDING INSIDE -> call INSIDE.
+2. OPPONENT DEFENDING OUTSIDE -> call INSIDE.
+3. OPPONENT DEFENDING INSIDE -> call OUTSIDE.
+4. OPPONENT DEFENDING OUTSIDE -> call OUTSIDE.
+
+For each case, inspect whether the acknowledgement is immediate, the car waits
+briefly before moving, the preparation is smooth and readable from the Driver
+Feed, the plan remains locked, the opponent does not react, neither car completes
+an overtake, and the plan clears before the next approach. The subjective question
+for the game director is whether this feels like communicating a plan rather than
+pressing a steering direction.
+
+Step 2 remains deliberately uncommitted pending human playtest approval.
+
 ## 2026-08-07 - Overtake decision experiment foundation
 
 ### Task goal

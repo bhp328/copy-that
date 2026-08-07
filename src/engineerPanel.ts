@@ -4,6 +4,7 @@ import {
   LANGUAGE_LABELS,
   type Language,
 } from './localization';
+import type { IntentPlan } from './intentCall';
 import type { DefenseSide } from './overtakeScenario';
 
 export interface EngineerPanelOptions {
@@ -11,6 +12,7 @@ export interface EngineerPanelOptions {
   driverFeedLabel: HTMLElement;
   driverFeedStatus: HTMLElement;
   initialLanguage?: Language;
+  onIntentCall?: (plan: IntentPlan) => void;
 }
 
 const LANGUAGES: readonly Language[] = ['en', 'ko'];
@@ -32,17 +34,28 @@ export class EngineerPanel {
   private readonly gapLabel: HTMLElement;
   private readonly gapValue: HTMLOutputElement;
   private readonly gapUnit: HTMLElement;
+  private readonly acknowledgement: HTMLOutputElement;
+  private readonly intentSection: HTMLElement;
+  private readonly intentHeading: HTMLElement;
+  private readonly planLabel: HTMLElement;
+  private readonly planValue: HTMLOutputElement;
+  private readonly intentButtons = new Map<IntentPlan, HTMLButtonElement>();
+  private readonly onIntentCall?: (plan: IntentPlan) => void;
 
   private language: Language;
   private cornerDirection: CornerDirection = 'right';
   private distanceMetres = 0;
   private defenseSide: DefenseSide = 'inside';
   private gapSeconds = 0;
+  private intentAvailable = false;
+  private committedPlan: IntentPlan | null = null;
+  private acknowledgementText: string | null = null;
 
   constructor(options: EngineerPanelOptions) {
     this.language = options.initialLanguage ?? 'en';
     this.driverFeedLabel = options.driverFeedLabel;
     this.driverFeedStatus = options.driverFeedStatus;
+    this.onIntentCall = options.onIntentCall;
 
     this.element = createElement('aside', 'engineer-panel');
     this.element.setAttribute('aria-label', 'Engineer');
@@ -67,6 +80,15 @@ export class EngineerPanel {
       this.languageToggle.append(button);
     });
     header.append(titleGroup, this.languageToggle);
+
+    this.acknowledgement = createElement(
+      'output',
+      'engineer-panel__acknowledgement',
+    );
+    this.acknowledgement.setAttribute('role', 'status');
+    this.acknowledgement.setAttribute('aria-live', 'assertive');
+    this.acknowledgement.setAttribute('aria-atomic', 'true');
+    this.acknowledgement.hidden = true;
 
     const information = createElement('div', 'engineer-panel__information');
 
@@ -106,7 +128,38 @@ export class EngineerPanel {
     gapCard.append(this.gapLabel, gapReading);
 
     information.append(nextCard, opponentCard, gapCard);
-    this.element.append(header, information);
+
+    this.intentSection = createElement('section', 'engineer-intent');
+    const intentHeader = createElement('div', 'engineer-intent__header');
+    this.intentHeading = createElement('h2', 'engineer-intent__heading');
+    const planReading = createElement('div', 'engineer-intent__plan');
+    this.planLabel = createElement('span', 'engineer-intent__plan-label');
+    this.planValue = createElement('output', 'engineer-intent__plan-value');
+    planReading.append(this.planLabel, this.planValue);
+    intentHeader.append(this.intentHeading, planReading);
+
+    const intentControls = createElement('div', 'engineer-intent__controls');
+    (['inside', 'outside'] as const).forEach((plan) => {
+      const button = createElement('button', 'engineer-intent__button');
+      button.type = 'button';
+      button.dataset.intent = plan;
+      button.disabled = true;
+      button.addEventListener('click', () => {
+        if (!button.disabled) {
+          this.onIntentCall?.(plan);
+        }
+      });
+      this.intentButtons.set(plan, button);
+      intentControls.append(button);
+    });
+    this.intentSection.append(intentHeader, intentControls);
+
+    this.element.append(
+      header,
+      this.acknowledgement,
+      information,
+      this.intentSection,
+    );
     options.parent.append(this.element);
     this.renderLanguage();
   }
@@ -131,6 +184,17 @@ export class EngineerPanel {
     this.renderGap();
   }
 
+  setIntentState(
+    available: boolean,
+    committedPlan: IntentPlan | null,
+    acknowledgement: string | null,
+  ): void {
+    this.intentAvailable = available;
+    this.committedPlan = committedPlan;
+    this.acknowledgementText = acknowledgement;
+    this.renderIntentState();
+  }
+
   setLanguage(language: Language): void {
     this.language = language;
     document.documentElement.lang = language;
@@ -147,6 +211,8 @@ export class EngineerPanel {
     this.nextLabel.textContent = text.nextCorner;
     this.opponentLabel.textContent = text.opponent;
     this.gapLabel.textContent = text.gap;
+    this.intentHeading.textContent = text.intentCall;
+    this.planLabel.textContent = text.plan;
 
     this.languageButtons.forEach((button, language) => {
       const selected = language === this.language;
@@ -157,6 +223,7 @@ export class EngineerPanel {
     this.renderNextCorner();
     this.renderDefense();
     this.renderGap();
+    this.renderIntentState();
   }
 
   private renderNextCorner(): void {
@@ -182,6 +249,36 @@ export class EngineerPanel {
     this.gapValue.value = formattedGap;
     this.gapValue.textContent = formattedGap;
     this.gapUnit.textContent = text.units.seconds;
+  }
+
+  private renderIntentState(): void {
+    const text = getUiText(this.language);
+    const controlsAvailable =
+      this.intentAvailable && this.committedPlan === null;
+
+    this.planValue.value = this.committedPlan
+      ? text.intent[this.committedPlan]
+      : text.emptyValue;
+    this.planValue.textContent = this.planValue.value;
+    this.intentSection.classList.toggle('is-available', controlsAvailable);
+
+    if (this.committedPlan) {
+      this.intentSection.dataset.plan = this.committedPlan;
+    } else {
+      this.intentSection.removeAttribute('data-plan');
+    }
+
+    this.intentButtons.forEach((button, plan) => {
+      const selected = plan === this.committedPlan;
+      button.textContent = text.intent[plan];
+      button.disabled = !controlsAvailable;
+      button.classList.toggle('is-selected', selected);
+      button.setAttribute('aria-pressed', selected.toString());
+    });
+
+    this.acknowledgement.hidden = this.acknowledgementText === null;
+    this.acknowledgement.value = this.acknowledgementText ?? '';
+    this.acknowledgement.textContent = this.acknowledgementText ?? '';
   }
 }
 
