@@ -1,5 +1,11 @@
 # Codex Log
 
+## 2026-08-07 - First stable Git checkpoint
+
+- Initialized the local Git repository and committed the stable prototype as
+  `bf279b54318f1c4889df5a97115cfd56af927f88`.
+- No remote repository was added and nothing was connected or pushed to GitHub.
+
 ## 2026-08-07 - Browser-based 3D foundation
 
 ### Task goal
