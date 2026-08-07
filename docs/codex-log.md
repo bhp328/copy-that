@@ -1,5 +1,97 @@
 # Codex Log
 
+## 2026-08-07 - Overtake decision experiment foundation
+
+### Task goal
+
+Prepare the next gameplay hypothesis without implementing its player command or
+outcome logic: put the player in a low Driver Feed, give the Engineer only the
+information needed to read one upcoming right-hander, and stage one opponent with
+two deterministic defense setups.
+
+### Relationship to the rejected TTC experiment
+
+- The first TTC / LATE BRAKE prototype remains an experimental, rejected design,
+  not the game's approved core mechanic.
+- Its source files and Git history are preserved, but its command button,
+  PREPARED/RUSHED/EMERGENCY feedback, TTC display, reactions, and pace controls
+  are no longer instantiated in normal play.
+- The old controller currently contributes only the competent automatic
+  no-command corner baseline at the fixed NORMAL pace.
+
+### Driver Feed and Engineer Panel
+
+- Replaced the active chase presentation with a low, close onboard/hood Driver
+  Feed. The chase-camera function remains in code for engineering comparison but
+  has no player-facing selector.
+- The desktop composition is an exact 75% Driver Feed / 25% Engineer Panel split.
+- The compact panel contains only three information cards: NEXT RIGHT plus
+  distance, OPPONENT DEFENDING INSIDE/OUTSIDE, and approximate GAP in seconds.
+- The panel reports observable facts and does not expose a command, recommended
+  answer, timing threshold, speed, pace, outcome, score, or hidden TTC value.
+- Added English and natural Korean panel text, including `인사이드` and
+  `아웃사이드` motorsport terminology.
+
+### Opponent and deterministic A/B setup
+
+- Added exactly one visually distinct cyan primitive opponent ahead of the player.
+- Explicit scenario metadata defines approach start, defense start, corner entry,
+  apex, recovery end, staging gap, entry gap, and defense offset.
+- The scripted gap closes smoothly from 28 m to 8.5 m approaching the existing
+  sharp right test corner, then recovers without collision or overtake resolution.
+- Scenario A defends the inside line; Scenario B defends the outside line. The
+  sequence alternates by corner occurrence/lap with no randomness, and the panel
+  reads the same state used to place the opponent on its actual line.
+- Architecture rule preserved in code and documentation: **Driver can save the
+  car. He cannot save the Engineer's decision.** No save, retirement, or DNF
+  behavior was implemented in this foundation.
+
+### Files changed
+
+- `src/main.ts` - active Driver Feed composition, fixed NORMAL baseline, opponent
+  integration, and disconnected command UI.
+- `src/overtakeScenario.ts` - explicit metadata, one primitive opponent, closing
+  gap staging, and alternating inside/outside defense lines.
+- `src/engineerPanel.ts` - compact information-only panel and language toggle.
+- `src/localization.ts` - English/Korean Driver Feed and Engineer Panel strings.
+- `src/style.css` - 75/25 desktop layout, onboard-feed treatment, panel styling,
+  and compact narrow-screen arrangement.
+- `docs/codex-log.md` - this implementation and test record.
+
+### Commands and tests run
+
+- `npm run build` (TypeScript and Vite production build).
+- Local Vite server and browser inspection at 1280x720.
+- Measured the rendered split as 960 px Driver Feed and 320 px Engineer Panel.
+- Verified one visible opponent ahead, a closing gap from about 0.9 s to 0.3 s,
+  Scenario A / DEFENDING INSIDE, Scenario B / DEFENDING OUTSIDE, and alternating
+  occurrences across laps.
+- Verified the opponent moved to the corresponding visible line in each scenario,
+  the NEXT RIGHT distance wrapped, and the baseline car remained stable through
+  the corner.
+- Verified English and Korean text, exactly three panel information cards, no old
+  command/pace/feedback elements in the active DOM, and zero browser runtime
+  warnings or errors.
+- Reviewed the narrow-screen CSS arrangement; the available browser surface was
+  fixed at 1280x720, so a separate device-sized visual pass remains advisable.
+
+### Problems encountered and solutions
+
+- Initial camera smoothing let the mount lag inside the player model, causing the
+  roof to obscure the feed. The onboard camera position is now locked to the car,
+  while only the look target is lightly smoothed; the hood remains visible without
+  clipping and speed/closing motion reads clearly.
+- Vite retains its existing non-blocking advisory for the Three.js bundle being
+  above 500 kB. Build and runtime behavior are otherwise clean.
+
+### Manual inspection result
+
+The foundation is technically ready for the next decision experiment: the Driver
+Feed is primary, the Engineer Panel is compact and non-prescriptive, the single
+opponent is easy to distinguish, both deterministic defense setups are legible,
+and their labels match their lines. No command or overtake outcome was added.
+This work is intentionally left uncommitted for review.
+
 ## 2026-08-07 - HUMAN PLAYTEST / DESIGN DECISION: TTC braking-call experiment rejected
 
 ### Status

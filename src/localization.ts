@@ -3,6 +3,7 @@ import type {
   CornerResult,
   TimingState,
 } from './cornerGameplay';
+import type { DefenseSide } from './overtakeScenario';
 
 export type Language = 'en' | 'ko';
 
@@ -15,6 +16,12 @@ export interface UiText {
   pace: Record<PaceMode, string>;
   nextCorner: string;
   direction: Record<CornerDirection, string>;
+  driverFeed: string;
+  live: string;
+  engineer: string;
+  opponent: string;
+  defending: Record<DefenseSide, string>;
+  gap: string;
   commandLabel: string;
   command: {
     lateBrake: string;
@@ -51,6 +58,15 @@ export const UI_TEXT = {
       left: 'LEFT',
       right: 'RIGHT',
     },
+    driverFeed: 'DRIVER FEED',
+    live: 'LIVE',
+    engineer: 'ENGINEER',
+    opponent: 'OPPONENT',
+    defending: {
+      inside: 'DEFENDING INSIDE',
+      outside: 'DEFENDING OUTSIDE',
+    },
+    gap: 'GAP',
     commandLabel: 'Engineer command',
     command: {
       lateBrake: 'LATE BRAKE',
@@ -97,6 +113,15 @@ export const UI_TEXT = {
       left: '왼쪽',
       right: '오른쪽',
     },
+    driverFeed: '드라이버 피드',
+    live: '라이브',
+    engineer: '레이스 엔지니어',
+    opponent: '상대 차량',
+    defending: {
+      inside: '인사이드 방어 중',
+      outside: '아웃사이드 방어 중',
+    },
+    gap: '갭',
     commandLabel: '엔지니어 지시',
     command: {
       lateBrake: '늦게 제동',
