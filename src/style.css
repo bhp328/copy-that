@@ -211,7 +211,7 @@ body {
   box-shadow: 0 11px 24px rgb(0 0 0 / 15%);
 }
 
-.engineer-card--opponent {
+.engineer-card--tactical {
   border-left-color: #35d8e1;
   background: linear-gradient(100deg, rgb(26 100 109 / 24%), rgb(2 10 16 / 42%) 62%);
 }
@@ -243,12 +243,6 @@ body {
   letter-spacing: -0.02em;
   line-height: 1;
   text-transform: uppercase;
-}
-
-.engineer-card__primary--defense {
-  color: #6cebf1;
-  font-size: clamp(0.98rem, 1.8vw, 1.36rem);
-  line-height: 1.12;
 }
 
 .engineer-card__secondary {
@@ -295,6 +289,95 @@ body {
 
 .engineer-card__gap-unit {
   font-size: 0.86rem;
+}
+
+.tactical-map {
+  display: block;
+  width: 100%;
+  height: clamp(96px, 17vh, 122px);
+  overflow: visible;
+}
+
+.tactical-map__road-edge,
+.tactical-map__road,
+.tactical-map__centre-reference {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tactical-map__road-edge {
+  stroke: #78909a;
+  stroke-width: 72;
+}
+
+.tactical-map__road {
+  stroke: #202b32;
+  stroke-width: 66;
+}
+
+.tactical-map__centre-reference {
+  stroke: rgb(202 220 224 / 32%);
+  stroke-width: 1.5;
+  stroke-dasharray: 7 7;
+}
+
+.tactical-map__car {
+  transition: transform 90ms linear;
+}
+
+.tactical-map__car-body {
+  stroke: #061017;
+  stroke-width: 1.5;
+}
+
+.tactical-map__car-heading {
+  fill: none;
+  stroke: #061017;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tactical-map__car--player .tactical-map__car-body {
+  fill: #ffd43b;
+}
+
+.tactical-map__car--opponent .tactical-map__car-body {
+  fill: #35d8e1;
+}
+
+.tactical-map__legend {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.tactical-map__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #8ea2ad;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tactical-map__legend-item::before {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: #fff;
+  content: '';
+}
+
+.tactical-map__legend-item--player::before {
+  background: #ffd43b;
+}
+
+.tactical-map__legend-item--opponent::before {
+  background: #35d8e1;
 }
 
 .engineer-panel__acknowledgement {
@@ -478,12 +561,16 @@ body {
     font-size: 1rem;
   }
 
-  .engineer-card__primary--defense {
-    font-size: clamp(0.7rem, 3vw, 0.9rem);
-  }
-
   .engineer-card__gap-value {
     font-size: 1.55rem;
+  }
+
+  .tactical-map {
+    height: 68px;
+  }
+
+  .tactical-map__legend {
+    display: none;
   }
 }
 

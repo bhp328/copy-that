@@ -22,6 +22,7 @@ export interface OvertakeScenarioSnapshot {
   gapMetres: number;
   gapSeconds: number;
   isClosing: boolean;
+  opponentLateralOffsetMetres: number;
 }
 
 /**
@@ -30,13 +31,13 @@ export interface OvertakeScenarioSnapshot {
  */
 export const OVERTAKE_SCENARIO = Object.freeze({
   approachStartProgress: 0.56,
-  defenseStartProgress: 0.7,
+  defenseStartProgress: 0.62,
   cornerEntryProgress: 0.88,
   apexProgress: 0.93,
   recoveryEndProgress: 0.99,
   stagingGapMetres: 28,
   entryGapMetres: 8.5,
-  defenseOffsetMetres: 1.65,
+  defenseOffsetMetres: 2.35,
 } satisfies OvertakeScenarioMetadata);
 
 const WORLD_UP = new THREE.Vector3(0, 1, 0);
@@ -80,6 +81,7 @@ export class OvertakeScenarioController {
       gapMetres: metadata.stagingGapMetres,
       gapSeconds: 0,
       isClosing: false,
+      opponentLateralOffsetMetres: 0,
     };
   }
 
@@ -123,6 +125,7 @@ export class OvertakeScenarioController {
       isClosing:
         playerProgress >= this.metadata.approachStartProgress &&
         playerProgress < this.metadata.cornerEntryProgress,
+      opponentLateralOffsetMetres: lateralOffset,
     };
 
     return this.state;

@@ -22,6 +22,8 @@ export interface UiText {
   engineer: string;
   opponent: string;
   defending: Record<DefenseSide, string>;
+  tacticalMap: string;
+  playerCar: string;
   gap: string;
   intentCall: string;
   plan: string;
@@ -70,6 +72,8 @@ export const UI_TEXT = {
       inside: 'DEFENDING INSIDE',
       outside: 'DEFENDING OUTSIDE',
     },
+    tacticalMap: 'TACTICAL',
+    playerCar: 'YOU',
     gap: 'GAP',
     intentCall: 'INTENT CALL',
     plan: 'PLAN',
@@ -131,6 +135,8 @@ export const UI_TEXT = {
       inside: '인사이드 방어 중',
       outside: '아웃사이드 방어 중',
     },
+    tacticalMap: '전술 맵',
+    playerCar: '내 차량',
     gap: '갭',
     intentCall: '전술 지시',
     plan: '플랜',

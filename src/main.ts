@@ -110,12 +110,12 @@ function updateDriverCamera(deltaSeconds: number, snap = false): void {
   desiredCameraPosition
     .copy(car.object.position)
     .addScaledVector(trackTangent, 0.95)
-    .addScaledVector(carUp, 1.68);
+    .addScaledVector(carUp, 1.82);
 
   desiredLookTarget
     .copy(car.object.position)
     .addScaledVector(trackTangent, 19)
-    .addScaledVector(carUp, 1.02);
+    .addScaledVector(carUp, 1.01);
 
   const lookSmoothing = snap ? 1 : 1 - Math.exp(-11 * deltaSeconds);
   camera.position.copy(desiredCameraPosition);
@@ -171,7 +171,6 @@ engineerPanel.setNextCorner(
   track.gameplayCorner.direction,
   initialScenario.distanceToCornerMetres,
 );
-engineerPanel.setDefenseSide(initialScenario.defenseSide);
 engineerPanel.setGapSeconds(initialScenario.gapSeconds);
 intentCalls.update(0, car.totalProgress);
 const initialIntent = intentCalls.snapshot;
@@ -179,6 +178,11 @@ engineerPanel.setIntentState(
   initialIntent.isAvailable,
   initialIntent.committedPlan,
   initialIntent.acknowledgement,
+);
+engineerPanel.setTacticalPositions(
+  initialScenario.opponentLateralOffsetMetres,
+  initialIntent.preparationOffsetMetres,
+  track.getRoadWidthAt(car.progress),
 );
 resize();
 updateCamera(0, true);
@@ -212,13 +216,17 @@ renderer.setAnimationLoop(() => {
     track.gameplayCorner.direction,
     scenario.distanceToCornerMetres,
   );
-  engineerPanel.setDefenseSide(scenario.defenseSide);
   engineerPanel.setGapSeconds(scenario.gapSeconds);
   const intent = intentCalls.snapshot;
   engineerPanel.setIntentState(
     intent.isAvailable,
     intent.committedPlan,
     intent.acknowledgement,
+  );
+  engineerPanel.setTacticalPositions(
+    scenario.opponentLateralOffsetMetres,
+    intent.preparationOffsetMetres,
+    track.getRoadWidthAt(car.progress),
   );
 
   updateCamera(deltaSeconds);

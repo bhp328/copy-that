@@ -1,5 +1,147 @@
 # Codex Log
 
+## 2026-08-07 - HUMAN PLAYTEST / DESIGN DECISION: Step 2.5 approved for core-loop work
+
+### Human playtest findings
+
+- Opponent defensive lateral movement is now much easier to perceive in the
+  Driver Feed, and the wider, clearer local approach successfully improved
+  left/right readability.
+- INSIDE / OUTSIDE preparation is readable enough to continue.
+- Because Driver preparation is deliberately not instantaneous, the communication
+  window can still feel compressed. The player needs more time to read, call an
+  intent, watch preparation, and reach the execution opportunity.
+- The tactical-map concept is useful, but its current markers mostly communicate
+  lateral displacement. They do not convincingly progress longitudinally through
+  the local race situation, so the map can feel like the old explicit defense
+  label converted into a diagram.
+- Improve the map and communication staging inside the complete core loop rather
+  than creating another isolated micro-step.
+- Most importantly, preparation again produced a strong desire for the missing
+  execution cue: the player wants to call NOW.
+
+### Decision
+
+Proceed to the first complete core-loop test:
+
+`information -> intent -> acknowledgement -> preparation -> NOW -> pass / failed attempt -> retry`
+
+The upcoming implementation must simulate first, derive the opportunity from a
+shared state/kinematic model, and preserve: **Driver can save the car. He cannot
+save the Engineer's decision.**
+
+## 2026-08-07 - Step 2.5: tactical-information and approach-readability correction
+
+### Preserved Step 2 checkpoint
+
+The completed INSIDE / OUTSIDE intent-call prototype and its human-playtest
+decision were committed before this correction as
+`c9994be64e049c488348ba2049104440f985461b` with message
+`Prototype: intent calls and driver preparation`.
+
+### Step 2.5 goal
+
+Keep the approved intent, acknowledgement, preparation, locking, reset, and A/B
+opponent systems unchanged while correcting three presentation problems: the
+Engineer gave away the interpreted answer, the local approach was compressed,
+and lateral preparation was difficult to read from the Driver Feed.
+
+### Tactical information instead of an answer
+
+- Removed active `DEFENDING INSIDE` / `DEFENDING OUTSIDE` text from the Engineer
+  interface. The historical localization entries remain unused rather than being
+  aggressively deleted.
+- Added one lightweight SVG tactical map of the local approach and upcoming
+  right-hand corner. It is not a full-track minimap.
+- The map shows a yellow player marker, cyan opponent marker, local road shape,
+  and their relative lateral positions. The opponent marker consumes the same
+  signed lateral offset that places the physical opponent; the player marker uses
+  the Driver's actual preparation offset.
+- The map contains no named side, recommended lane, open-line highlight, correct
+  answer, timing information, or command suggestion. NEXT RIGHT, distance, GAP,
+  and the existing intent controls remain compact factual information.
+
+### Local approach and track changes
+
+- Adjusted only the control points leading into the existing gameplay right-hander
+  to produce a clearer short near-straight staging section.
+- Added a smooth local road-width profile: the normal circuit remains 8.5 m wide,
+  while the overtake approach expands to 12.4 m and tapers back after the corner.
+- Road edges and kerbs now follow that local width rather than widening the entire
+  circuit.
+- Added subdued dashed centre references only through the overtake approach so
+  lateral position is readable without adding general telemetry or visual polish.
+- The opponent now begins its deterministic defensive movement earlier in the
+  staging area and reaches a more legible track-relative offset. A/B alternation
+  and independence from the Engineer's plan are unchanged.
+
+### Driver Feed and preparation readability
+
+- Kept the hood/onboard camera as the primary view and raised it only slightly to
+  reveal more road width and reference markings without becoming overhead.
+- Increased the controlled preparation offset modestly within the wider local
+  corridor. The acknowledgement delay and smooth interpolation remain, so an
+  intent still reads as a Driver-executed plan rather than direct steering.
+- INSIDE continues toward the physical right/inside corridor; OUTSIDE continues
+  toward the physical left/outside corridor using track-local orientation.
+- No NOW, execution, pass, collision, success/failure, score, or high-G effect was
+  added. **Driver can save the car. He cannot save the Engineer's decision.**
+
+### Files changed
+
+- `src/track.ts` - local curve alignment, width profile, matching edges/kerbs, and
+  approach reference marks.
+- `src/overtakeScenario.ts` - earlier/more legible defensive movement and the live
+  opponent lateral offset in the scenario snapshot.
+- `src/intentCall.ts` - modestly larger preparation offset within the wider zone.
+- `src/engineerPanel.ts` - position-only SVG tactical map driven by live offsets.
+- `src/main.ts` - supplies actual player/opponent positions and local road width to
+  the map, plus a small onboard-camera height adjustment.
+- `src/localization.ts` - English/Korean tactical-map and car-identity labels.
+- `src/style.css` - compact tactical-map presentation and marker styling.
+- `docs/codex-log.md` - this Step 2.5 record.
+
+### Commands and tests run
+
+- `npm run build` (TypeScript and Vite production build).
+- Browser-tested the 75/25 Driver Feed layout, local near-straight, widened
+  corridor, centre references, closing gap, acknowledgement, locked intent,
+  smooth INSIDE and OUTSIDE preparation, reset behavior, and the opponent staying
+  ahead.
+- Ran a controlled consecutive A -> B cycle. The physical opponent and cyan map
+  marker moved to map-right together in A and map-left together in B; the scenario
+  continued alternating deterministically.
+- Verified the player marker followed actual delayed preparation in both
+  directions, while the opponent remained independent of the selected intent.
+- Verified one tactical map, exactly two intent buttons, English/Korean, no active
+  explicit defense answer, no old gameplay HUD, no NOW/execution/outcome text, and
+  zero browser runtime warnings or errors.
+
+### Problems encountered and solutions
+
+- The first visual map scale made real defensive displacement too subtle. Marker
+  scaling was increased within the schematic road bounds, and defensive movement
+  was started earlier in the existing approach so the change becomes legible
+  before corner entry.
+- Vite retains its existing non-blocking advisory for the bundled Three.js chunk
+  exceeding 500 kB.
+
+### Manual inspection instructions
+
+In the Driver Feed, inspect whether the local road clearly opens into a short
+near-straight, the centre references make left/right position readable, the
+opponent visibly covers alternating sides, and INSIDE/OUTSIDE produce a delayed,
+smooth setup without passing. Confirm that the rest of the circuit does not feel
+globally widened and that the camera remains an onboard view.
+
+In the Engineer Panel, compare the cyan marker directly with the opponent's
+physical side, confirm the yellow marker follows the Driver's preparation, read
+the upcoming right-turn shape, and decide whether this is clearer tactical context
+without naming the correct answer. Also verify Korean, plan locking, acknowledgement,
+and reset across consecutive A/B occurrences.
+
+Step 2.5 remains deliberately uncommitted pending human review.
+
 ## 2026-08-07 - HUMAN PLAYTEST / DESIGN DECISION: Step 2 intent structure approved
 
 ### Decision

@@ -5,7 +5,6 @@ import {
   type Language,
 } from './localization';
 import type { IntentPlan } from './intentCall';
-import type { DefenseSide } from './overtakeScenario';
 
 export interface EngineerPanelOptions {
   parent: HTMLElement;
@@ -29,8 +28,12 @@ export class EngineerPanel {
   private readonly nextDirection: HTMLOutputElement;
   private readonly nextDistance: HTMLOutputElement;
   private readonly nextUnit: HTMLElement;
-  private readonly opponentLabel: HTMLElement;
-  private readonly defenseValue: HTMLOutputElement;
+  private readonly tacticalLabel: HTMLElement;
+  private readonly tacticalMap: SVGSVGElement;
+  private readonly playerMarker: SVGGElement;
+  private readonly opponentMarker: SVGGElement;
+  private readonly playerLegend: HTMLElement;
+  private readonly opponentLegend: HTMLElement;
   private readonly gapLabel: HTMLElement;
   private readonly gapValue: HTMLOutputElement;
   private readonly gapUnit: HTMLElement;
@@ -45,8 +48,10 @@ export class EngineerPanel {
   private language: Language;
   private cornerDirection: CornerDirection = 'right';
   private distanceMetres = 0;
-  private defenseSide: DefenseSide = 'inside';
   private gapSeconds = 0;
+  private opponentLateralOffsetMetres = 0;
+  private playerLateralOffsetMetres = 0;
+  private corridorWidthMetres = 8.5;
   private intentAvailable = false;
   private committedPlan: IntentPlan | null = null;
   private acknowledgementText: string | null = null;
@@ -103,16 +108,53 @@ export class EngineerPanel {
     nextReading.append(this.nextDirection, nextDistanceGroup);
     nextCard.append(this.nextLabel, nextReading);
 
-    const opponentCard = createElement(
+    const tacticalCard = createElement(
       'section',
-      'engineer-card engineer-card--opponent',
+      'engineer-card engineer-card--tactical',
     );
-    this.opponentLabel = createElement('span', 'engineer-card__label');
-    this.defenseValue = createElement(
-      'output',
-      'engineer-card__primary engineer-card__primary--defense',
+    this.tacticalLabel = createElement('span', 'engineer-card__label');
+    this.tacticalMap = createSvgElement('svg', 'tactical-map');
+    this.tacticalMap.setAttribute('viewBox', '0 0 240 150');
+    this.tacticalMap.setAttribute('role', 'img');
+
+    const outerRoad = createSvgElement('path', 'tactical-map__road-edge');
+    outerRoad.setAttribute(
+      'd',
+      'M 108 154 L 108 100 C 108 56 148 32 190 32 L 246 32',
     );
-    opponentCard.append(this.opponentLabel, this.defenseValue);
+    const road = createSvgElement('path', 'tactical-map__road');
+    road.setAttribute('d', outerRoad.getAttribute('d') ?? '');
+    const centreReference = createSvgElement(
+      'path',
+      'tactical-map__centre-reference',
+    );
+    centreReference.setAttribute('d', outerRoad.getAttribute('d') ?? '');
+
+    this.playerMarker = createCarMarker('tactical-map__car--player');
+    this.opponentMarker = createCarMarker('tactical-map__car--opponent');
+    this.tacticalMap.append(
+      outerRoad,
+      road,
+      centreReference,
+      this.opponentMarker,
+      this.playerMarker,
+    );
+
+    const tacticalLegend = createElement('div', 'tactical-map__legend');
+    const playerLegendItem = createElement(
+      'span',
+      'tactical-map__legend-item tactical-map__legend-item--player',
+    );
+    this.playerLegend = createElement('span', 'tactical-map__legend-text');
+    const opponentLegendItem = createElement(
+      'span',
+      'tactical-map__legend-item tactical-map__legend-item--opponent',
+    );
+    this.opponentLegend = createElement('span', 'tactical-map__legend-text');
+    playerLegendItem.append(this.playerLegend);
+    opponentLegendItem.append(this.opponentLegend);
+    tacticalLegend.append(playerLegendItem, opponentLegendItem);
+    tacticalCard.append(this.tacticalLabel, this.tacticalMap, tacticalLegend);
 
     const gapCard = createElement('section', 'engineer-card engineer-card--gap');
     this.gapLabel = createElement('span', 'engineer-card__label');
@@ -127,7 +169,7 @@ export class EngineerPanel {
     gapReading.append(approximation, this.gapValue, this.gapUnit);
     gapCard.append(this.gapLabel, gapReading);
 
-    information.append(nextCard, opponentCard, gapCard);
+    information.append(nextCard, tacticalCard, gapCard);
 
     this.intentSection = createElement('section', 'engineer-intent');
     const intentHeader = createElement('div', 'engineer-intent__header');
@@ -172,9 +214,19 @@ export class EngineerPanel {
     this.renderNextCorner();
   }
 
-  setDefenseSide(defenseSide: DefenseSide): void {
-    this.defenseSide = defenseSide;
-    this.renderDefense();
+  setTacticalPositions(
+    opponentLateralOffsetMetres: number,
+    playerLateralOffsetMetres: number,
+    corridorWidthMetres: number,
+  ): void {
+    this.opponentLateralOffsetMetres = finiteOrZero(
+      opponentLateralOffsetMetres,
+    );
+    this.playerLateralOffsetMetres = finiteOrZero(playerLateralOffsetMetres);
+    this.corridorWidthMetres = Number.isFinite(corridorWidthMetres)
+      ? Math.max(1, corridorWidthMetres)
+      : 8.5;
+    this.renderTacticalPositions();
   }
 
   setGapSeconds(gapSeconds: number): void {
@@ -209,7 +261,10 @@ export class EngineerPanel {
     this.element.setAttribute('aria-label', text.engineer);
     this.languageToggle.setAttribute('aria-label', text.language);
     this.nextLabel.textContent = text.nextCorner;
-    this.opponentLabel.textContent = text.opponent;
+    this.tacticalLabel.textContent = text.tacticalMap;
+    this.playerLegend.textContent = text.playerCar;
+    this.opponentLegend.textContent = text.opponent;
+    this.tacticalMap.setAttribute('aria-label', text.tacticalMap);
     this.gapLabel.textContent = text.gap;
     this.intentHeading.textContent = text.intentCall;
     this.planLabel.textContent = text.plan;
@@ -221,7 +276,7 @@ export class EngineerPanel {
     });
 
     this.renderNextCorner();
-    this.renderDefense();
+    this.renderTacticalPositions();
     this.renderGap();
     this.renderIntentState();
   }
@@ -236,11 +291,19 @@ export class EngineerPanel {
     this.nextUnit.textContent = text.units.metres;
   }
 
-  private renderDefense(): void {
-    const defense = getUiText(this.language).defending[this.defenseSide];
-    this.defenseValue.value = defense;
-    this.defenseValue.textContent = defense;
-    this.defenseValue.dataset.defense = this.defenseSide;
+  private renderTacticalPositions(): void {
+    const corridorHalfWidth = Math.max(1, this.corridorWidthMetres * 0.5);
+    const pixelsPerMetre = 34 / corridorHalfWidth;
+    // The car controller's positive lateral basis is physical left on the test
+    // approach, so invert it to make physical right read as map-right.
+    const playerX = 108 - this.playerLateralOffsetMetres * pixelsPerMetre;
+    const opponentX =
+      108 - this.opponentLateralOffsetMetres * pixelsPerMetre;
+    this.playerMarker.setAttribute('transform', `translate(${playerX} 128)`);
+    this.opponentMarker.setAttribute(
+      'transform',
+      `translate(${opponentX} 86)`,
+    );
   }
 
   private renderGap(): void {
@@ -293,4 +356,31 @@ function createElement<K extends keyof HTMLElementTagNameMap>(
     element.textContent = text;
   }
   return element;
+}
+
+function createSvgElement<K extends keyof SVGElementTagNameMap>(
+  tagName: K,
+  className: string,
+): SVGElementTagNameMap[K] {
+  const element = document.createElementNS('http://www.w3.org/2000/svg', tagName);
+  element.setAttribute('class', className);
+  return element;
+}
+
+function createCarMarker(className: string): SVGGElement {
+  const marker = createSvgElement('g', `tactical-map__car ${className}`);
+  const body = createSvgElement('rect', 'tactical-map__car-body');
+  body.setAttribute('x', '-7');
+  body.setAttribute('y', '-11');
+  body.setAttribute('width', '14');
+  body.setAttribute('height', '22');
+  body.setAttribute('rx', '3');
+  const heading = createSvgElement('path', 'tactical-map__car-heading');
+  heading.setAttribute('d', 'M -4 -7 L 0 -12 L 4 -7');
+  marker.append(body, heading);
+  return marker;
+}
+
+function finiteOrZero(value: number): number {
+  return Number.isFinite(value) ? value : 0;
 }

@@ -28,7 +28,7 @@ interface IntentPreparationTuning {
 const INTENT_PREPARATION = Object.freeze({
   responseDelaySeconds: 0.32,
   acknowledgementDurationSeconds: 2.2,
-  preparationOffsetMetres: 1.55,
+  preparationOffsetMetres: 2.25,
   preparationResponse: 2.4,
   returnResponse: 3.4,
 } satisfies IntentPreparationTuning);

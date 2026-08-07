@@ -2,6 +2,16 @@ import * as THREE from 'three';
 import type { GameplayCorner } from './cornerGameplay';
 
 const WORLD_UP = new THREE.Vector3(0, 1, 0);
+const BASE_ROAD_WIDTH = 8.5;
+
+/** Local-only width staging for the overtake approach; the rest stays compact. */
+export const OVERTAKE_APPROACH_SPACE = Object.freeze({
+  widenStartProgress: 0.49,
+  fullWidthStartProgress: 0.55,
+  fullWidthEndProgress: 0.91,
+  narrowEndProgress: 0.995,
+  width: 12.4,
+});
 
 /**
  * The one corner used by the current timing prototype. The existing curve's
@@ -24,6 +34,7 @@ export interface RaceTrack {
   /** Cached center-line length in Three.js units (treated as metres). */
   length: number;
   roadWidth: number;
+  getRoadWidthAt: (progress: number) => number;
   gameplayCorner: GameplayCorner;
 }
 
@@ -45,9 +56,9 @@ export function createRaceTrack(): RaceTrack {
       new THREE.Vector3(27, 2.6, -39),
       new THREE.Vector3(51, 1.1, -17),
       new THREE.Vector3(53, 0.4, 17),
-      new THREE.Vector3(31, 2.1, 39),
-      new THREE.Vector3(2, 3.3, 46),
-      new THREE.Vector3(-29, 1.0, 38),
+      new THREE.Vector3(32, 2.1, 42),
+      new THREE.Vector3(0, 2.4, 43),
+      new THREE.Vector3(-31, 1.0, 38),
       new THREE.Vector3(-51, 0.3, 20),
     ],
     true,
@@ -56,12 +67,13 @@ export function createRaceTrack(): RaceTrack {
   curve.arcLengthDivisions = 1200;
   curve.updateArcLengths();
 
-  const roadWidth = 8.5;
-  const road = createRoadRibbon(curve, roadWidth, 320);
+  const roadWidth = BASE_ROAD_WIDTH;
+  const road = createRoadRibbon(curve, getRoadWidthAt, 320);
   group.add(road);
 
-  addRoadEdges(group, curve, roadWidth, 320);
-  addKerbMarkers(group, curve, roadWidth, 72);
+  addRoadEdges(group, curve, getRoadWidthAt, 320);
+  addKerbMarkers(group, curve, getRoadWidthAt, 72);
+  addApproachReferenceMarks(group, curve);
   addStartLine(group, curve, roadWidth);
   addTracksidePylons(group, curve, roadWidth, 18);
   addGround(group);
@@ -72,22 +84,59 @@ export function createRaceTrack(): RaceTrack {
     curve,
     length: curve.getLength(),
     roadWidth,
+    getRoadWidthAt,
     gameplayCorner: TEST_GAMEPLAY_CORNER,
   };
 }
 
+export function getRoadWidthAt(progress: number): number {
+  const wrappedProgress = ((progress % 1) + 1) % 1;
+  const {
+    widenStartProgress,
+    fullWidthStartProgress,
+    fullWidthEndProgress,
+    narrowEndProgress,
+    width,
+  } = OVERTAKE_APPROACH_SPACE;
+
+  if (
+    wrappedProgress < widenStartProgress ||
+    wrappedProgress >= narrowEndProgress
+  ) {
+    return BASE_ROAD_WIDTH;
+  }
+  if (wrappedProgress < fullWidthStartProgress) {
+    const blend = THREE.MathUtils.smootherstep(
+      wrappedProgress,
+      widenStartProgress,
+      fullWidthStartProgress,
+    );
+    return THREE.MathUtils.lerp(BASE_ROAD_WIDTH, width, blend);
+  }
+  if (wrappedProgress <= fullWidthEndProgress) {
+    return width;
+  }
+
+  const blend = THREE.MathUtils.smootherstep(
+    wrappedProgress,
+    fullWidthEndProgress,
+    narrowEndProgress,
+  );
+  return THREE.MathUtils.lerp(width, BASE_ROAD_WIDTH, blend);
+}
+
 function createRoadRibbon(
   curve: THREE.CatmullRomCurve3,
-  width: number,
+  widthAt: (progress: number) => number,
   segments: number,
 ): THREE.Mesh {
   const positions: number[] = [];
   const uvs: number[] = [];
   const indices: number[] = [];
-  const halfWidth = width * 0.5;
 
   for (let index = 0; index <= segments; index += 1) {
     const progress = index / segments;
+    const halfWidth = widthAt(progress) * 0.5;
     const point = curve.getPointAt(progress);
     const frame = getTrackFrame(curve, progress);
     const left = point.clone().addScaledVector(frame.right, -halfWidth);
@@ -129,15 +178,15 @@ function createRoadRibbon(
 function addRoadEdges(
   group: THREE.Group,
   curve: THREE.CatmullRomCurve3,
-  width: number,
+  widthAt: (progress: number) => number,
   segments: number,
 ): void {
-  const halfWidth = width * 0.5;
   const leftPoints: THREE.Vector3[] = [];
   const rightPoints: THREE.Vector3[] = [];
 
   for (let index = 0; index < segments; index += 1) {
     const progress = index / segments;
+    const halfWidth = widthAt(progress) * 0.5;
     const point = curve.getPointAt(progress);
     const frame = getTrackFrame(curve, progress);
     leftPoints.push(
@@ -171,7 +220,7 @@ function addRoadEdges(
 function addKerbMarkers(
   group: THREE.Group,
   curve: THREE.CatmullRomCurve3,
-  width: number,
+  widthAt: (progress: number) => number,
   markerCount: number,
 ): void {
   const markerGeometry = new THREE.BoxGeometry(0.7, 0.12, 2.25);
@@ -183,10 +232,10 @@ function addKerbMarkers(
     color: 0xe64242,
     roughness: 0.72,
   });
-  const halfWidth = width * 0.5 - 0.18;
 
   for (let index = 0; index < markerCount; index += 1) {
     const progress = index / markerCount;
+    const halfWidth = widthAt(progress) * 0.5 - 0.18;
     const point = curve.getPointAt(progress);
     const frame = getTrackFrame(curve, progress);
     const material = index % 2 === 0 ? whiteMaterial : redMaterial;
@@ -202,6 +251,30 @@ function addKerbMarkers(
       marker.receiveShadow = true;
       group.add(marker);
     }
+  }
+}
+
+function addApproachReferenceMarks(
+  group: THREE.Group,
+  curve: THREE.CatmullRomCurve3,
+): void {
+  const markerGeometry = new THREE.BoxGeometry(0.16, 0.045, 2.7);
+  const markerMaterial = new THREE.MeshStandardMaterial({
+    color: 0xc5ced0,
+    roughness: 0.86,
+    transparent: true,
+    opacity: 0.58,
+  });
+
+  for (let progress = 0.54; progress <= 0.875; progress += 0.024) {
+    const point = curve.getPointAt(progress);
+    const frame = getTrackFrame(curve, progress);
+    const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+    marker.name = 'overtake-approach-reference';
+    marker.position.copy(point).addScaledVector(frame.up, 0.075);
+    marker.quaternion.copy(frame.quaternion);
+    marker.receiveShadow = true;
+    group.add(marker);
   }
 }
 
