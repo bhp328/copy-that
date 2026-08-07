@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { CarController } from './carController';
+import { CornerGameplayController } from './cornerGameplay';
 import { HUD } from './hud';
 import { createRaceTrack } from './track';
 import './style.css';
@@ -40,11 +41,35 @@ scene.add(track.group);
 const car = new CarController(track.curve, 'normal', 0.01);
 scene.add(car.object);
 
+const cornerGameplay = new CornerGameplayController(
+  track.gameplayCorner,
+  track.length,
+);
+const DRIVER_REACTION_DURATION_SECONDS = 2.4;
+let driverReactionSecondsRemaining = 0;
+
 const hud = new HUD({
   parent: app,
   initialPace: car.paceMode,
   onPaceChange: (paceMode) => car.setPaceMode(paceMode),
+  onLateBrake: handleLateBrake,
 });
+
+function handleLateBrake(): void {
+  const feedback = cornerGameplay.issueLateBrake(
+    car.totalProgress,
+    car.speedKmh,
+  );
+
+  if (!feedback) {
+    return;
+  }
+
+  hud.setLastCall(feedback);
+  hud.setDriverReaction(feedback.timing);
+  hud.setLateBrakeAvailable(false);
+  driverReactionSecondsRemaining = DRIVER_REACTION_DURATION_SECONDS;
+}
 
 const worldUp = new THREE.Vector3(0, 1, 0);
 const trackTangent = new THREE.Vector3();
@@ -87,6 +112,11 @@ window.addEventListener('resize', resize);
 
 updateChaseCamera(0, true);
 hud.setSpeed(car.speedKmh);
+hud.setNextCorner(
+  track.gameplayCorner.direction,
+  cornerGameplay.distanceToNextCorner(car.totalProgress),
+);
+hud.setLateBrakeAvailable(true);
 
 let previousFrameTime = performance.now();
 
@@ -98,8 +128,25 @@ renderer.setAnimationLoop(() => {
   );
   previousFrameTime = currentFrameTime;
 
-  car.update(deltaSeconds);
+  const drivingModifiers = cornerGameplay.update(
+    car.totalProgress,
+    car.targetSpeedKmh,
+  );
+  car.update(deltaSeconds, drivingModifiers);
   updateChaseCamera(deltaSeconds);
   hud.setSpeed(car.speedKmh);
+  hud.setNextCorner(
+    track.gameplayCorner.direction,
+    cornerGameplay.distanceToNextCorner(car.totalProgress),
+  );
+  hud.setLateBrakeAvailable(!cornerGameplay.hasActiveCommand);
+
+  if (driverReactionSecondsRemaining > 0) {
+    driverReactionSecondsRemaining -= deltaSeconds;
+    if (driverReactionSecondsRemaining <= 0) {
+      hud.setDriverReaction(null);
+    }
+  }
+
   renderer.render(scene, camera);
 });

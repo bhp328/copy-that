@@ -1,6 +1,20 @@
 import * as THREE from 'three';
+import type { GameplayCorner } from './cornerGameplay';
 
 const WORLD_UP = new THREE.Vector3(0, 1, 0);
+
+/**
+ * The one corner used by the current timing prototype. The existing curve's
+ * sharpest right-hander follows a long, fast section, so no track redesign is
+ * needed. Keep these points together when tuning the corner later.
+ */
+export const TEST_GAMEPLAY_CORNER = Object.freeze({
+  approachStartProgress: 0.7,
+  entryProgress: 0.88,
+  apexProgress: 0.93,
+  exitProgress: 0.99,
+  direction: 'right',
+} satisfies GameplayCorner);
 
 export interface RaceTrack {
   /** Add this group to the scene. It contains the road, ground, markers, and lights. */
@@ -10,6 +24,7 @@ export interface RaceTrack {
   /** Cached center-line length in Three.js units (treated as metres). */
   length: number;
   roadWidth: number;
+  gameplayCorner: GameplayCorner;
 }
 
 /**
@@ -57,6 +72,7 @@ export function createRaceTrack(): RaceTrack {
     curve,
     length: curve.getLength(),
     roadWidth,
+    gameplayCorner: TEST_GAMEPLAY_CORNER,
   };
 }
 

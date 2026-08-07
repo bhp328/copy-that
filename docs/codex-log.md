@@ -1,5 +1,130 @@
 # Codex Log
 
+## 2026-08-07 - HUMAN PLAYTEST / DESIGN DECISION: TTC braking-call experiment rejected
+
+### Status
+
+This is an experimental, rejected gameplay iteration. It is being committed for
+historical reference and is not an approved stable gameplay checkpoint.
+
+### Human playtest findings
+
+- All four states were manually tested: NO CALL, PREPARED, RUSHED, and EMERGENCY.
+- The system works technically, but the current mechanic is not fun enough.
+- PREPARED is too forgiving: `TTC >= 2.5 s` has no upper bound, so calling very
+  early is an obvious dominant strategy. Precise timing is therefore not rewarded,
+  undermining the "Timing is Gameplay" thesis.
+- RUSHED, and especially EMERGENCY, are too narrow and difficult to encounter
+  naturally.
+- A static one-corner LATE BRAKE experiment makes the correct action too obvious.
+- The AI Driver currently feels too safe and invulnerable. Do not add
+  retirement/DNF yet; failure severity will be revisited after the core timing
+  mechanic works.
+- NO CALL being better than a bad EMERGENCY call is intentional and should remain.
+
+### Desired outcome hierarchy
+
+`PERFECT CALL > NO CALL > BAD CALL > CATASTROPHIC FAILURE`
+
+### Terminology decision
+
+LATE BRAKE is semantically confusing because late braking is a driving technique,
+while a late call is a communication-timing failure. Korean automotive terminology
+should avoid awkward literal translations; if this concept returns, prefer
+`레이트 브레이킹` over `늦은 제동`.
+
+### Next design hypothesis
+
+Replace this test mechanic in the next iteration with one direct `BRAKE!` call and
+an explicit optimal timing window:
+
+- TOO EARLY -> safe but slower
+- PERFECT -> fastest successful entry
+- LATE -> unstable / time loss
+- CRITICAL -> severe deterministic failure
+
+Do not implement this redesign until explicitly requested.
+
+## 2026-08-07 - LATE BRAKE timing gameplay prototype
+
+### Task goal
+
+Test whether one Race Engineer command is fun when the same LATE BRAKE input
+produces different deterministic driving outcomes based on when it is given.
+
+### Gameplay logic implemented
+
+- Selected the existing track's sharpest right-hand corner as the one explicit
+  gameplay corner. Its approach, entry, apex, and recovery progress values are
+  `0.70`, `0.88`, `0.93`, and `0.99`; the track shape itself was not changed.
+- Added a continuously wrapping NEXT / RIGHT / distance HUD readout.
+- Added exactly one command button: LATE BRAKE.
+- Recorded distance, current speed, and TTC once at command receipt, then latched
+  the command to that specific upcoming corner occurrence.
+- Added competent automatic no-call braking, a faster stable PREPARED line, a
+  delayed hard-braking RUSHED line with controlled wobble, and an EMERGENCY
+  outside overshoot with heavy speed loss and deterministic recovery.
+- Added temporary Driver reactions and persistent last-call feedback explaining
+  the recorded TTC, timing classification, and result.
+- Added English and Korean text through the existing localization dictionary.
+- Reset the command after the target corner exit so every lap is independently
+  testable; commands issued after entry correctly target the next lap.
+
+### Final TTC thresholds
+
+- PREPARED: TTC greater than or equal to `2.5 s`.
+- RUSHED: TTC greater than or equal to `1.0 s` and less than `2.5 s`.
+- EMERGENCY: TTC less than `1.0 s`.
+
+The original prototype values were retained because browser testing confirmed
+that all three windows are reachable at SAFE, NORMAL, and PUSH speeds.
+
+### Important implementation decisions
+
+- `CornerGameplayController` owns timing, occurrence targeting, default corner
+  braking, temporary outcome profiles, and reset behavior outside `main.ts`.
+- `CarController` now exposes unwrapped total progress and accepts small per-frame
+  arcade modifiers for target speed, response, lateral offset, and yaw.
+- The good call delays braking and keeps a substantially higher corner speed than
+  the competent baseline; no randomness or realistic tire physics was added.
+- The temporary Driver reaction is displayed for 2.4 seconds. The call feedback
+  remains visible for comparison after the command behavior resets.
+
+### Files changed
+
+- `src/cornerGameplay.ts` - timing math, corner state, classifications, outcomes.
+- `src/carController.ts` - total lap progress and deterministic driving modifiers.
+- `src/track.ts` - explicit metadata for the one gameplay test corner.
+- `src/main.ts` - connects controller, car, camera, HUD, and reaction duration.
+- `src/hud.ts` - next-corner, command, reaction, and debug-feedback UI.
+- `src/localization.ts` - English/Korean strings for the new UI and reactions.
+- `src/style.css` - responsive layout for the added prototype HUD elements.
+- `docs/codex-log.md` - this task record.
+
+### Commands and tests run
+
+- `npm run build` (TypeScript and Vite production build).
+- Local Vite server with an HTTP 200 startup check.
+- Browser checks for the no-call baseline and PREPARED, RUSHED, and EMERGENCY.
+- Verified next-corner countdown/wrap, one-occurrence command latching, reset and
+  repeatability, post-entry next-lap targeting, SAFE/NORMAL/PUSH, English/Korean,
+  no console errors, 390x844 mobile layout, and 900x450 landscape layout.
+- `git diff --check` and `git status --short`; no Git commit was created.
+
+### Problems encountered and solutions
+
+- This terminal did not initially resolve `npm` from PATH. The installed Node/npm
+  directory was added to PATH for the build command; the project itself required
+  no dependency or configuration change.
+- The first PREPARED tuning reached the same corner speed as the no-call baseline.
+  Its braking was delayed further and its stable corner-speed advantage increased;
+  retesting measured about 128 km/h at entry versus about 93 km/h without a call.
+- The first RUSHED tuning braked harder but began at the normal braking marker.
+  Its braking start was moved deeper into the approach; retesting kept 130 km/h
+  until late in the approach before a sharp drop to about 50 km/h and a wobble.
+- Vite still reports its existing non-blocking advisory for a JavaScript chunk
+  above 500 kB because Three.js is bundled into this small single-page prototype.
+
 ## 2026-08-07 - First stable Git checkpoint
 
 - Initialized the local Git repository and committed the stable prototype as

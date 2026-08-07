@@ -12,9 +12,21 @@ export const PACE_TARGET_SPEEDS_KMH: Readonly<Record<PaceMode, number>> = {
   push: 230,
 };
 
+/**
+ * Temporary arcade-driving values supplied by gameplay systems for one frame.
+ * Omitting a value preserves the normal pace-controller behaviour.
+ */
+export interface DrivingModifiers {
+  targetSpeedKmh?: number;
+  speedResponse?: number;
+  lateralOffset?: number;
+  yawOffset?: number;
+}
+
 const WORLD_UP = new THREE.Vector3(0, 1, 0);
 const KMH_PER_METRE_PER_SECOND = 3.6;
 const SPEED_RESPONSE = 1.45;
+const MIN_SPEED_RESPONSE = 0.001;
 const MAX_FRAME_STEP_SECONDS = 0.1;
 const WHEEL_RADIUS = 0.46;
 
@@ -31,6 +43,7 @@ export class CarController {
   private currentPaceMode: PaceMode;
   private currentSpeedMetresPerSecond = 0;
   private currentProgress: number;
+  private currentTotalProgress: number;
 
   constructor(
     curve: THREE.CatmullRomCurve3,
@@ -41,7 +54,10 @@ export class CarController {
     this.curve.updateArcLengths();
     this.trackLength = this.curve.getLength();
     this.currentPaceMode = initialPaceMode;
-    this.currentProgress = wrapProgress(initialProgress);
+    this.currentTotalProgress = Number.isFinite(initialProgress)
+      ? Math.max(0, initialProgress)
+      : 0;
+    this.currentProgress = wrapProgress(this.currentTotalProgress);
 
     const model = createLowPolyCar();
     this.object = model.group;
@@ -50,21 +66,29 @@ export class CarController {
   }
 
   /** Advance the deterministic simulation by elapsed real time in seconds. */
-  update(deltaSeconds: number): void {
+  update(deltaSeconds: number, modifiers: DrivingModifiers = {}): void {
     const timeStep = THREE.MathUtils.clamp(
       Number.isFinite(deltaSeconds) ? deltaSeconds : 0,
       0,
       MAX_FRAME_STEP_SECONDS,
     );
     if (timeStep === 0) {
+      this.placeCarOnTrack(modifiers);
       return;
     }
 
     const previousSpeed = this.currentSpeedMetresPerSecond;
+    const requestedTargetSpeedKmh = finiteOr(
+      modifiers.targetSpeedKmh,
+      PACE_TARGET_SPEEDS_KMH[this.currentPaceMode],
+    );
     const targetSpeed =
-      PACE_TARGET_SPEEDS_KMH[this.currentPaceMode] /
-      KMH_PER_METRE_PER_SECOND;
-    const decay = Math.exp(-SPEED_RESPONSE * timeStep);
+      Math.max(0, requestedTargetSpeedKmh) / KMH_PER_METRE_PER_SECOND;
+    const speedResponse = Math.max(
+      MIN_SPEED_RESPONSE,
+      finiteOr(modifiers.speedResponse, SPEED_RESPONSE),
+    );
+    const decay = Math.exp(-speedResponse * timeStep);
 
     this.currentSpeedMetresPerSecond =
       targetSpeed + (previousSpeed - targetSpeed) * decay;
@@ -73,13 +97,12 @@ export class CarController {
     // so the same command timeline has stable results at different frame rates.
     const distanceTravelled =
       targetSpeed * timeStep +
-      ((previousSpeed - targetSpeed) * (1 - decay)) / SPEED_RESPONSE;
+      ((previousSpeed - targetSpeed) * (1 - decay)) / speedResponse;
 
-    this.currentProgress = wrapProgress(
-      this.currentProgress + distanceTravelled / this.trackLength,
-    );
+    this.currentTotalProgress += distanceTravelled / this.trackLength;
+    this.currentProgress = wrapProgress(this.currentTotalProgress);
     this.spinWheels(distanceTravelled);
-    this.placeCarOnTrack();
+    this.placeCarOnTrack(modifiers);
   }
 
   setPaceMode(paceMode: PaceMode): void {
@@ -103,7 +126,16 @@ export class CarController {
     return this.currentProgress;
   }
 
-  private placeCarOnTrack(): void {
+  /** Unwrapped lap progress. Each whole number represents one completed lap. */
+  get totalProgress(): number {
+    return this.currentTotalProgress;
+  }
+
+  get completedLaps(): number {
+    return Math.floor(this.currentTotalProgress);
+  }
+
+  private placeCarOnTrack(modifiers: DrivingModifiers = {}): void {
     const point = this.curve.getPointAt(this.currentProgress);
     const tangent = this.curve.getTangentAt(this.currentProgress).normalize();
     const right = new THREE.Vector3()
@@ -111,9 +143,15 @@ export class CarController {
       .normalize();
     const up = new THREE.Vector3().crossVectors(tangent, right).normalize();
     const orientation = new THREE.Matrix4().makeBasis(right, up, tangent);
+    const lateralOffset = finiteOr(modifiers.lateralOffset, 0);
+    const yawOffset = finiteOr(modifiers.yawOffset, 0);
 
-    this.object.position.copy(point).addScaledVector(up, 0.08);
+    this.object.position
+      .copy(point)
+      .addScaledVector(right, lateralOffset)
+      .addScaledVector(up, 0.08);
     this.object.quaternion.setFromRotationMatrix(orientation);
+    this.object.rotateY(yawOffset);
   }
 
   private spinWheels(distanceTravelled: number): void {
@@ -244,4 +282,8 @@ function createLowPolyCar(): { group: THREE.Group; wheels: THREE.Mesh[] } {
 
 function wrapProgress(progress: number): number {
   return ((progress % 1) + 1) % 1;
+}
+
+function finiteOr(value: number | undefined, fallback: number): number {
+  return value !== undefined && Number.isFinite(value) ? value : fallback;
 }
