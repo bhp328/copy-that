@@ -1,5 +1,113 @@
 # Codex Log
 
+## 2026-08-08 - Core-loop human-timing correction (uncommitted)
+
+### Correction
+
+- Removed the frozen 1.5-second information hold. The race now moves through an
+  explicit reveal/read phase, Driver preparation phase, and later execution
+  phase with no visible pause.
+- Intent unlocks only after the opponent's actual lateral state crosses the
+  shared readability threshold. The existing delayed, smooth Driver preparation
+  is preserved, and NOW requires real 80% preparation at call time rather than
+  crediting movement that would happen after an instant call.
+- Retimed the longer event kinematically: matched-speed formation protects the
+  read phase, later tow acceleration builds pressure, and live speed, gap,
+  clearance, preparation, and road remaining create a 3.75-4.70 s viable NOW
+  interval rather than a fixed success timer.
+- Normal play now selects each already-determined defense from a seeded hashed
+  event sequence instead of forced A/B alternation. Debug retains forced Scenario
+  A/B and repeatable `seed` support. Outcome failure/success remains deterministic.
+- Replaced the clamped GAP display with live `BEHIND / SIDE BY SIDE / AHEAD`
+  relation and signed player-centric seconds, localized as
+  `뒤처짐 / 나란히 / 앞섬` in Korean.
+- Tactical markers now follow the existing curved road path using actual local
+  longitudinal and lateral state, making overlap and the player's crossing ahead
+  visually legible. Debug reports now include the complete causal timestamp chain.
+
+### Verification
+
+- Human-reaction sweeps starting only after defense readability pass at 0.6,
+  1.0, and 1.4 s observation-to-intent delays. Both forced sides retain the same
+  state-derived 0.95 s NOW opportunity; immediate/early, viable, late,
+  wrong-line, and no-call results remain distinct and deterministic.
+- The ten-case matrix and 30/60/120 FPS classification checks pass. Browser tests
+  confirmed moving cue gating, good forced A/B passes, causal early/late/blocked
+  failures, safe no-call, seeded `inside, inside, outside` Retry sequence,
+  English/Korean AHEAD state, visible tactical crossing, timestamped debug report,
+  and no console warnings/errors.
+- `npm run sim:overtake` and `npm run build` pass. The only build warning is the
+  existing Vite advisory for a JavaScript chunk over 500 kB.
+
+This work corrects the existing **uncommitted Core Loop experiment** directly.
+It is not a stable or approved checkpoint, and no commit was created.
+
+## 2026-08-07 - HUMAN PLAYTEST / DESIGN DECISION: Core-loop payoff promising, human timing rejected
+
+### Human playtest findings
+
+- Successfully passing the opponent felt fun. The overtake payoff itself is the
+  strongest result of this iteration and should be preserved.
+- Reactive play was effectively impossible. Waiting to visually identify the
+  opponent's defense, selecting the opposite intent, and calling NOW shortly
+  afterward often produced `Too late.`
+- Success became practical mainly by memorizing the deterministic A/B alternation
+  and pre-entering the next answer. That tests sequence memory rather than reading
+  and communicating the live race situation.
+- The simulator technically found a viable machine-input window, but it omitted
+  the time a human needs to receive, interpret, and communicate the information.
+- After a pass, GAP incorrectly remained around zero instead of clearly showing
+  that the player was ahead.
+- Tactical-map markers consumed longitudinal state, but their scale made that
+  movement visually weak; the map still read mostly as lateral dots.
+
+### Design decision
+
+**PAYOFF IS PROMISING. HUMAN COMMUNICATION TIMING MODEL IS WRONG.**
+
+Correct the existing uncommitted Core Loop directly. Replace the frozen
+information hold with moving reveal/read, intent/preparation, and execution
+phases; simulate reaction latency from the moment defense becomes readable; use
+seeded non-alternating defense selection in normal play while retaining forced
+A/B debug cases; and repair the signed gap and tactical-map crossing. Do not add
+new commands, failure systems, audio, or polish, and do not checkpoint this
+broken-timing version.
+
+## 2026-08-07 - First complete overtake core-loop experiment
+
+### Goal and implementation
+
+- Built the first complete test of `information -> intent -> acknowledgement ->
+  preparation -> NOW -> pass / failed attempt -> retry`.
+- Added a deterministic shared overtake model used by both the browser runtime
+  and `npm run sim:overtake`; the useful NOW region is predicted from tow speed,
+  gap, preparation/lateral clearance, opponent velocity, and road remaining.
+- Staged the event earlier and added a short information hold so the Engineer can
+  read the opponent, call a lane, see the Driver prepare, and then choose NOW.
+- A correct viable call produces a visible pass and `Got him.`; early, late, and
+  blocked-side calls produce readable safe aborts with `Too soon.`, `Too late.`,
+  or `No room.`. No call remains safely behind.
+- Added actual longitudinal and lateral tactical-map motion, one-call NOW/`지금`,
+  an alternating fast Retry control, and developer-only `?debug=1` telemetry with
+  a copyable plain-text report. Normal play contains no timing meter or answer.
+
+### Simulation and verification
+
+- The approved Step 2.5 seed produced no viable NOW region. After evidence-led
+  scenario tuning, both mirrored correct-lane cases produce one contiguous
+  `0.90-1.85 s` model-relative region (about `0.95 s`).
+- The ten-case A/B matrix passes, wrong-line calls never pass, and no-call stops at
+  the deterministic 7 m following gap. Early/good/late classifications match at
+  30, 60, and 120 FPS.
+- `npm run build` succeeds. Browser testing verified the visible success, all
+  failure reactions, no-call, A/B Retry, English/Korean controls, debug copy,
+  responsive 720p layout, and zero runtime warnings/errors.
+- Full model assumptions, before/after values, parameter rationale, and sweep
+  evidence are recorded in `docs/overtake-sim.md`.
+
+This core loop is an **uncommitted gameplay experiment pending human fun
+testing**, not an approved stable checkpoint.
+
 ## 2026-08-07 - HUMAN PLAYTEST / DESIGN DECISION: Step 2.5 approved for core-loop work
 
 ### Human playtest findings
@@ -140,7 +248,10 @@ the upcoming right-turn shape, and decide whether this is clearer tactical conte
 without naming the correct answer. Also verify Korean, plan locking, acknowledgement,
 and reset across consecutive A/B occurrences.
 
-Step 2.5 remains deliberately uncommitted pending human review.
+Following human approval, this Step 2.5 state and its playtest decision were
+preserved as commit `6c29d839fe24b766cd57cae287d0df5a675ba88b` with message
+`Prototype: readable overtake staging and tactical information` before core-loop
+implementation began.
 
 ## 2026-08-07 - HUMAN PLAYTEST / DESIGN DECISION: Step 2 intent structure approved
 

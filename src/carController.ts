@@ -105,6 +105,32 @@ export class CarController {
     this.placeCarOnTrack(modifiers);
   }
 
+  /**
+   * Place the rendered car from an authoritative gameplay-model state. This is
+   * used by the overtake experiment so browser play and CLI simulation cannot
+   * drift into separate speed/gap equations.
+   */
+  setSimulationState(
+    totalProgress: number,
+    speedKmh: number,
+    modifiers: DrivingModifiers = {},
+  ): void {
+    const nextTotalProgress = Number.isFinite(totalProgress)
+      ? Math.max(0, totalProgress)
+      : this.currentTotalProgress;
+    const distanceTravelled =
+      (nextTotalProgress - this.currentTotalProgress) * this.trackLength;
+    if (Math.abs(distanceTravelled) < this.trackLength * 0.5) {
+      this.spinWheels(distanceTravelled);
+    }
+    this.currentTotalProgress = nextTotalProgress;
+    this.currentProgress = wrapProgress(nextTotalProgress);
+    this.currentSpeedMetresPerSecond =
+      Math.max(0, Number.isFinite(speedKmh) ? speedKmh : 0) /
+      KMH_PER_METRE_PER_SECOND;
+    this.placeCarOnTrack(modifiers);
+  }
+
   setPaceMode(paceMode: PaceMode): void {
     this.currentPaceMode = paceMode;
   }

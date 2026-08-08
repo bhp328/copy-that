@@ -1,9 +1,13 @@
 import * as THREE from 'three';
-import { CarController, type DrivingModifiers } from './carController';
-import { CornerGameplayController } from './cornerGameplay';
+import { CarController } from './carController';
+import { OvertakeDebugPanel } from './debugPanel';
 import { EngineerPanel } from './engineerPanel';
-import { IntentCallController, type IntentPlan } from './intentCall';
-import { OvertakeScenarioController } from './overtakeScenario';
+import type { IntentPlan } from './intentCall';
+import {
+  CoreOvertakeController,
+  type DefenseSelectionMode,
+  type CoreOvertakeSnapshot,
+} from './overtakeGameplay';
 import { createRaceTrack } from './track';
 import './style.css';
 
@@ -52,45 +56,78 @@ const camera = new THREE.PerspectiveCamera(72, 1, 0.1, 300);
 const track = createRaceTrack();
 scene.add(track.group);
 
-// NORMAL remains the fixed, controlled baseline for this experiment.
-const car = new CarController(track.curve, 'normal', 0.01);
-car.setPaceMode('normal');
-scene.add(car.object);
+const queryParameters = new URLSearchParams(window.location.search);
+const debugEnabled = queryParameters.get('debug') === '1';
+const scenarioParameter = queryParameters.get('scenario')?.toUpperCase();
+const forcedDefense: DefenseSelectionMode =
+  debugEnabled && scenarioParameter === 'A'
+    ? 'inside'
+    : debugEnabled && scenarioParameter === 'B'
+      ? 'outside'
+      : 'seeded';
+const seedParameter = queryParameters.get('seed');
+const requestedSeed = seedParameter === null ? Number.NaN : Number(seedParameter);
+const debugSeed = Number.isFinite(requestedSeed) ? requestedSeed : undefined;
 
-// The rejected command path remains in source control. Here it supplies only
-// the competent automatic corner-driving baseline; no command is ever issued.
-const automaticCornerDriving = new CornerGameplayController(
-  track.gameplayCorner,
-  track.length,
-);
-
-const overtakeScenario = new OvertakeScenarioController(
+const overtake = new CoreOvertakeController(
   track.curve,
   track.length,
   track.gameplayCorner,
+  {
+    defenseMode: forcedDefense,
+    seed: debugSeed,
+  },
 );
-scene.add(overtakeScenario.opponent);
+scene.add(overtake.opponent);
 
-const intentCalls = new IntentCallController(track.gameplayCorner);
+const initialState = overtake.snapshot;
+const car = new CarController(
+  track.curve,
+  'normal',
+  initialState.playerTotalProgress,
+);
+car.setSimulationState(
+  initialState.playerTotalProgress,
+  initialState.playerSpeedKmh,
+  { lateralOffset: initialState.playerLateralOffsetMetres },
+);
+scene.add(car.object);
 
 const engineerPanel = new EngineerPanel({
   parent: app,
   driverFeedLabel: feedLabel,
   driverFeedStatus: feedStatus,
   onIntentCall: handleIntentCall,
+  onNowCall: handleNowCall,
+  onRetry: handleRetry,
 });
 
+const debugPanel = debugEnabled
+  ? new OvertakeDebugPanel(app, overtake)
+  : null;
+
 function handleIntentCall(plan: IntentPlan): void {
-  if (!intentCalls.issueIntent(plan, car.totalProgress)) {
+  if (overtake.issueIntent(plan)) {
+    renderGameplay(overtake.snapshot);
+  }
+}
+
+function handleNowCall(): void {
+  if (overtake.issueNow()) {
+    renderGameplay(overtake.snapshot);
+  }
+}
+
+function handleRetry(): void {
+  if (!overtake.retry()) {
     return;
   }
-
-  const intent = intentCalls.snapshot;
-  engineerPanel.setIntentState(
-    intent.isAvailable,
-    intent.committedPlan,
-    intent.acknowledgement,
-  );
+  const state = overtake.snapshot;
+  car.setSimulationState(state.playerTotalProgress, state.playerSpeedKmh, {
+    lateralOffset: state.playerLateralOffsetMetres,
+  });
+  renderGameplay(state);
+  updateCamera(0, true);
 }
 
 type CameraMode = 'driver' | 'chase';
@@ -111,7 +148,6 @@ function updateDriverCamera(deltaSeconds: number, snap = false): void {
     .copy(car.object.position)
     .addScaledVector(trackTangent, 0.95)
     .addScaledVector(carUp, 1.82);
-
   desiredLookTarget
     .copy(car.object.position)
     .addScaledVector(trackTangent, 19)
@@ -154,36 +190,42 @@ function updateCamera(deltaSeconds: number, snap = false): void {
 function resize(): void {
   const width = Math.max(1, driverFeed.clientWidth);
   const height = Math.max(1, driverFeed.clientHeight);
-
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(width, height, false);
 }
 
-window.addEventListener('resize', resize);
+function renderGameplay(state: CoreOvertakeSnapshot): void {
+  engineerPanel.setNextCorner(
+    track.gameplayCorner.direction,
+    state.distanceToCornerMetres,
+  );
+  engineerPanel.setRaceGap(state.relativeGapSeconds, state.gapRelation);
+  engineerPanel.setIntentState(
+    state.canCallIntent,
+    state.intent,
+    null,
+  );
+  engineerPanel.setGameplayState(
+    state.canCallNow,
+    state.nowCalled,
+    state.canRetry,
+    state.driverMessage,
+  );
+  engineerPanel.setTacticalPositions(
+    state.opponentLateralOffsetMetres,
+    state.playerLateralOffsetMetres,
+    track.getRoadWidthAt(car.progress),
+    state.playerDistanceMetres,
+    state.opponentDistanceMetres,
+    overtake.tuning.eventDistanceMetres,
+  );
+  debugPanel?.update();
+}
 
-const initialScenario = overtakeScenario.update(
-  car.totalProgress,
-  car.speedKmh,
-);
-engineerPanel.setNextCorner(
-  track.gameplayCorner.direction,
-  initialScenario.distanceToCornerMetres,
-);
-engineerPanel.setGapSeconds(initialScenario.gapSeconds);
-intentCalls.update(0, car.totalProgress);
-const initialIntent = intentCalls.snapshot;
-engineerPanel.setIntentState(
-  initialIntent.isAvailable,
-  initialIntent.committedPlan,
-  initialIntent.acknowledgement,
-);
-engineerPanel.setTacticalPositions(
-  initialScenario.opponentLateralOffsetMetres,
-  initialIntent.preparationOffsetMetres,
-  track.getRoadWidthAt(car.progress),
-);
+window.addEventListener('resize', resize);
+renderGameplay(initialState);
 resize();
 updateCamera(0, true);
 
@@ -197,51 +239,11 @@ renderer.setAnimationLoop(() => {
   );
   previousFrameTime = currentFrameTime;
 
-  const automaticModifiers = automaticCornerDriving.update(
-    car.totalProgress,
-    car.targetSpeedKmh,
-  );
-  const preparationModifiers = intentCalls.update(
-    deltaSeconds,
-    car.totalProgress,
-  );
-  const drivingModifiers = combineDrivingModifiers(
-    automaticModifiers,
-    preparationModifiers,
-  );
-  car.update(deltaSeconds, drivingModifiers);
-
-  const scenario = overtakeScenario.update(car.totalProgress, car.speedKmh);
-  engineerPanel.setNextCorner(
-    track.gameplayCorner.direction,
-    scenario.distanceToCornerMetres,
-  );
-  engineerPanel.setGapSeconds(scenario.gapSeconds);
-  const intent = intentCalls.snapshot;
-  engineerPanel.setIntentState(
-    intent.isAvailable,
-    intent.committedPlan,
-    intent.acknowledgement,
-  );
-  engineerPanel.setTacticalPositions(
-    scenario.opponentLateralOffsetMetres,
-    intent.preparationOffsetMetres,
-    track.getRoadWidthAt(car.progress),
-  );
-
+  const state = overtake.update(deltaSeconds);
+  car.setSimulationState(state.playerTotalProgress, state.playerSpeedKmh, {
+    lateralOffset: state.playerLateralOffsetMetres,
+  });
+  renderGameplay(state);
   updateCamera(deltaSeconds);
   renderer.render(scene, camera);
 });
-
-function combineDrivingModifiers(
-  automatic: DrivingModifiers,
-  preparation: DrivingModifiers,
-): DrivingModifiers {
-  const automaticOffset = automatic.lateralOffset ?? 0;
-  const preparationOffset = preparation.lateralOffset ?? 0;
-
-  return {
-    ...automatic,
-    lateralOffset: automaticOffset + preparationOffset,
-  };
-}

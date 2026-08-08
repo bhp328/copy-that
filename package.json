@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sim:overtake": "tsc -p tsconfig.sim.json && node .sim-dist/scripts/sim-overtake.js"
   },
   "dependencies": {
     "three": "^0.185.1"

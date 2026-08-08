@@ -105,7 +105,7 @@ body {
   min-width: 0;
   min-height: 0;
   flex-direction: column;
-  padding: clamp(18px, 2.2vw, 34px) clamp(16px, 2vw, 28px);
+  padding: clamp(14px, 1.8vw, 24px) clamp(14px, 1.7vw, 22px);
   overflow: hidden;
   color: #f3f8fb;
   background:
@@ -129,7 +129,7 @@ body {
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding-bottom: clamp(20px, 3.4vh, 36px);
+  padding-bottom: clamp(10px, 1.8vh, 18px);
   border-bottom: 1px solid rgb(160 207 217 / 18%);
 }
 
@@ -194,16 +194,18 @@ body {
 
 .engineer-panel__information {
   display: grid;
-  align-content: center;
+  grid-template-rows: auto minmax(128px, 1fr) auto;
+  align-content: stretch;
   flex: 1;
-  gap: clamp(12px, 2.5vh, 24px);
+  gap: clamp(8px, 1.4vh, 13px);
   min-height: 0;
+  padding-top: clamp(9px, 1.5vh, 14px);
 }
 
 .engineer-card {
   display: grid;
-  gap: clamp(8px, 1.2vh, 13px);
-  padding: clamp(16px, 2.5vw, 25px);
+  gap: clamp(6px, 1vh, 10px);
+  padding: clamp(11px, 1.5vw, 16px);
   border: 1px solid rgb(146 192 202 / 15%);
   border-left: 3px solid #37606a;
   border-radius: 4px;
@@ -294,7 +296,7 @@ body {
 .tactical-map {
   display: block;
   width: 100%;
-  height: clamp(96px, 17vh, 122px);
+  height: clamp(82px, 14vh, 104px);
   overflow: visible;
 }
 
@@ -323,7 +325,7 @@ body {
 }
 
 .tactical-map__car {
-  transition: transform 90ms linear;
+  transition: transform 45ms linear;
 }
 
 .tactical-map__car-body {
@@ -396,8 +398,8 @@ body {
 .engineer-intent {
   display: grid;
   gap: 11px;
-  margin-top: 14px;
-  padding: clamp(13px, 1.8vw, 18px);
+  margin-top: 9px;
+  padding: clamp(10px, 1.4vw, 14px);
   border: 1px solid rgb(143 182 192 / 18%);
   border-radius: 4px;
   background: rgb(2 9 15 / 50%);
@@ -494,6 +496,88 @@ body {
   outline-offset: 2px;
 }
 
+.engineer-command {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+.engineer-command__button {
+  min-height: 46px;
+  padding: 10px 16px;
+  border: 2px solid #ff7557;
+  border-radius: 4px;
+  color: #fff;
+  background: #892f24;
+  cursor: pointer;
+  font-size: clamp(0.9rem, 1.5vw, 1.15rem);
+  font-weight: 950;
+  letter-spacing: 0.14em;
+  transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
+}
+
+.engineer-command__button:not(:disabled):hover {
+  border-color: #ffd1c6;
+  background: #b13b2c;
+  transform: translateY(-1px);
+}
+
+.engineer-command__button:disabled {
+  border-color: #4e626b;
+  color: #71838c;
+  background: #111c23;
+  cursor: not-allowed;
+}
+
+.engineer-command__button.is-called {
+  border-color: #67767d;
+  color: #8d9aa0;
+  background: #172127;
+}
+
+.engineer-command__button--retry {
+  border-color: #5edee5;
+  color: #061619;
+  background: #5edee5;
+}
+
+.debug-panel {
+  position: fixed;
+  z-index: 30;
+  top: 10px;
+  left: 10px;
+  width: min(620px, calc(100vw - 20px));
+  padding: 10px;
+  border: 1px solid #6ee8f0;
+  color: #dffcff;
+  background: rgb(2 10 15 / 94%);
+  box-shadow: 0 10px 32px rgb(0 0 0 / 45%);
+  font: 700 11px/1.45 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.debug-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 7px;
+}
+
+.debug-panel button {
+  padding: 5px 8px;
+  border: 1px solid #6ee8f0;
+  color: #dffcff;
+  background: #12323a;
+  cursor: pointer;
+  font: inherit;
+}
+
+.debug-panel pre {
+  margin: 0;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
 @media (max-width: 760px) {
   #app.prototype-shell {
     grid-template-rows: minmax(0, 65fr) minmax(270px, 35fr);
@@ -561,7 +645,7 @@ body {
     font-size: 1rem;
   }
 
-  .engineer-card__gap-value {
+.engineer-card__gap-value {
     font-size: 1.55rem;
   }
 
@@ -572,6 +656,22 @@ body {
   .tactical-map__legend {
     display: none;
   }
+}
+
+.engineer-card--gap[data-relation='sideBySide'] {
+  border-left-color: #ffd45a;
+}
+
+.engineer-card--gap[data-relation='sideBySide'] .engineer-card__gap-value {
+  color: #ffe39a;
+}
+
+.engineer-card--gap[data-relation='ahead'] {
+  border-left-color: #35d8e1;
+}
+
+.engineer-card--gap[data-relation='ahead'] .engineer-card__gap-value {
+  color: #8df6ff;
 }
 
 @media (max-width: 470px) {

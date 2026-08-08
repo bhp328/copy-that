@@ -4,6 +4,7 @@ import type {
   TimingState,
 } from './cornerGameplay';
 import type { IntentPlan } from './intentCall';
+import type { GapRelation } from './overtakeGameplay';
 import type { DefenseSide } from './overtakeScenario';
 
 export type Language = 'en' | 'ko';
@@ -25,9 +26,21 @@ export interface UiText {
   tacticalMap: string;
   playerCar: string;
   gap: string;
+  gapRelation: Record<GapRelation, string>;
   intentCall: string;
   plan: string;
   intent: Record<IntentPlan, string>;
+  now: string;
+  retry: string;
+  driverMessage: {
+    copyInside: string;
+    copyOutside: string;
+    now: string;
+    tooSoon: string;
+    tooLate: string;
+    noRoom: string;
+    gotHim: string;
+  };
   commandLabel: string;
   command: {
     lateBrake: string;
@@ -75,11 +88,27 @@ export const UI_TEXT = {
     tacticalMap: 'TACTICAL',
     playerCar: 'YOU',
     gap: 'GAP',
+    gapRelation: {
+      behind: 'BEHIND',
+      sideBySide: 'SIDE BY SIDE',
+      ahead: 'AHEAD',
+    },
     intentCall: 'INTENT CALL',
     plan: 'PLAN',
     intent: {
       inside: 'INSIDE',
       outside: 'OUTSIDE',
+    },
+    now: 'NOW',
+    retry: 'RETRY EVENT',
+    driverMessage: {
+      copyInside: 'Copy. Inside.',
+      copyOutside: 'Copy. Outside.',
+      now: 'Now.',
+      tooSoon: 'Too soon.',
+      tooLate: 'Too late.',
+      noRoom: 'No room.',
+      gotHim: 'Got him.',
     },
     commandLabel: 'Engineer command',
     command: {
@@ -138,11 +167,27 @@ export const UI_TEXT = {
     tacticalMap: '전술 맵',
     playerCar: '내 차량',
     gap: '갭',
+    gapRelation: {
+      behind: '뒤처짐',
+      sideBySide: '나란히',
+      ahead: '앞섬',
+    },
     intentCall: '전술 지시',
     plan: '플랜',
     intent: {
       inside: '인사이드',
       outside: '아웃사이드',
+    },
+    now: '지금',
+    retry: '이벤트 다시 시도',
+    driverMessage: {
+      copyInside: '확인. 인사이드.',
+      copyOutside: '확인. 아웃사이드.',
+      now: '지금.',
+      tooSoon: '너무 일러.',
+      tooLate: '너무 늦었어.',
+      noRoom: '공간 없어.',
+      gotHim: '잡았어.',
     },
     commandLabel: '엔지니어 지시',
     command: {

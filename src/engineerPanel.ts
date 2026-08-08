@@ -5,6 +5,10 @@ import {
   type Language,
 } from './localization';
 import type { IntentPlan } from './intentCall';
+import type {
+  DriverMessageKey,
+  GapRelation,
+} from './overtakeGameplay';
 
 export interface EngineerPanelOptions {
   parent: HTMLElement;
@@ -12,6 +16,8 @@ export interface EngineerPanelOptions {
   driverFeedStatus: HTMLElement;
   initialLanguage?: Language;
   onIntentCall?: (plan: IntentPlan) => void;
+  onNowCall?: () => void;
+  onRetry?: () => void;
 }
 
 const LANGUAGES: readonly Language[] = ['en', 'ko'];
@@ -30,11 +36,13 @@ export class EngineerPanel {
   private readonly nextUnit: HTMLElement;
   private readonly tacticalLabel: HTMLElement;
   private readonly tacticalMap: SVGSVGElement;
+  private readonly tacticalRoadPath: SVGPathElement;
   private readonly playerMarker: SVGGElement;
   private readonly opponentMarker: SVGGElement;
   private readonly playerLegend: HTMLElement;
   private readonly opponentLegend: HTMLElement;
   private readonly gapLabel: HTMLElement;
+  private readonly gapCard: HTMLElement;
   private readonly gapValue: HTMLOutputElement;
   private readonly gapUnit: HTMLElement;
   private readonly acknowledgement: HTMLOutputElement;
@@ -43,24 +51,38 @@ export class EngineerPanel {
   private readonly planLabel: HTMLElement;
   private readonly planValue: HTMLOutputElement;
   private readonly intentButtons = new Map<IntentPlan, HTMLButtonElement>();
+  private readonly nowButton: HTMLButtonElement;
+  private readonly retryButton: HTMLButtonElement;
   private readonly onIntentCall?: (plan: IntentPlan) => void;
+  private readonly onNowCall?: () => void;
+  private readonly onRetry?: () => void;
 
   private language: Language;
   private cornerDirection: CornerDirection = 'right';
   private distanceMetres = 0;
-  private gapSeconds = 0;
+  private relativeGapSeconds = 0;
+  private gapRelation: GapRelation = 'behind';
   private opponentLateralOffsetMetres = 0;
   private playerLateralOffsetMetres = 0;
   private corridorWidthMetres = 8.5;
+  private playerDistanceMetres = 0;
+  private opponentDistanceMetres = 22;
+  private eventDistanceMetres = 145;
   private intentAvailable = false;
   private committedPlan: IntentPlan | null = null;
   private acknowledgementText: string | null = null;
+  private driverMessage: DriverMessageKey | null = null;
+  private nowAvailable = false;
+  private nowCalled = false;
+  private retryAvailable = false;
 
   constructor(options: EngineerPanelOptions) {
     this.language = options.initialLanguage ?? 'en';
     this.driverFeedLabel = options.driverFeedLabel;
     this.driverFeedStatus = options.driverFeedStatus;
     this.onIntentCall = options.onIntentCall;
+    this.onNowCall = options.onNowCall;
+    this.onRetry = options.onRetry;
 
     this.element = createElement('aside', 'engineer-panel');
     this.element.setAttribute('aria-label', 'Engineer');
@@ -124,6 +146,7 @@ export class EngineerPanel {
     );
     const road = createSvgElement('path', 'tactical-map__road');
     road.setAttribute('d', outerRoad.getAttribute('d') ?? '');
+    this.tacticalRoadPath = road;
     const centreReference = createSvgElement(
       'path',
       'tactical-map__centre-reference',
@@ -156,7 +179,10 @@ export class EngineerPanel {
     tacticalLegend.append(playerLegendItem, opponentLegendItem);
     tacticalCard.append(this.tacticalLabel, this.tacticalMap, tacticalLegend);
 
-    const gapCard = createElement('section', 'engineer-card engineer-card--gap');
+    this.gapCard = createElement(
+      'section',
+      'engineer-card engineer-card--gap',
+    );
     this.gapLabel = createElement('span', 'engineer-card__label');
     const gapReading = createElement('div', 'engineer-card__gap-reading');
     const approximation = createElement(
@@ -167,9 +193,9 @@ export class EngineerPanel {
     this.gapValue = createElement('output', 'engineer-card__gap-value', '0.0');
     this.gapUnit = createElement('span', 'engineer-card__gap-unit');
     gapReading.append(approximation, this.gapValue, this.gapUnit);
-    gapCard.append(this.gapLabel, gapReading);
+    this.gapCard.append(this.gapLabel, gapReading);
 
-    information.append(nextCard, tacticalCard, gapCard);
+    information.append(nextCard, tacticalCard, this.gapCard);
 
     this.intentSection = createElement('section', 'engineer-intent');
     const intentHeader = createElement('div', 'engineer-intent__header');
@@ -194,7 +220,27 @@ export class EngineerPanel {
       this.intentButtons.set(plan, button);
       intentControls.append(button);
     });
-    this.intentSection.append(intentHeader, intentControls);
+    const commandControls = createElement('div', 'engineer-command');
+    this.nowButton = createElement(
+      'button',
+      'engineer-command__button engineer-command__button--now',
+    );
+    this.nowButton.type = 'button';
+    this.nowButton.disabled = true;
+    this.nowButton.addEventListener('click', () => {
+      if (!this.nowButton.disabled) {
+        this.onNowCall?.();
+      }
+    });
+    this.retryButton = createElement(
+      'button',
+      'engineer-command__button engineer-command__button--retry',
+    );
+    this.retryButton.type = 'button';
+    this.retryButton.hidden = true;
+    this.retryButton.addEventListener('click', () => this.onRetry?.());
+    commandControls.append(this.nowButton, this.retryButton);
+    this.intentSection.append(intentHeader, intentControls, commandControls);
 
     this.element.append(
       header,
@@ -218,6 +264,9 @@ export class EngineerPanel {
     opponentLateralOffsetMetres: number,
     playerLateralOffsetMetres: number,
     corridorWidthMetres: number,
+    playerDistanceMetres = 0,
+    opponentDistanceMetres = 22,
+    eventDistanceMetres = 145,
   ): void {
     this.opponentLateralOffsetMetres = finiteOrZero(
       opponentLateralOffsetMetres,
@@ -226,13 +275,22 @@ export class EngineerPanel {
     this.corridorWidthMetres = Number.isFinite(corridorWidthMetres)
       ? Math.max(1, corridorWidthMetres)
       : 8.5;
+    this.playerDistanceMetres = finiteOrZero(playerDistanceMetres);
+    this.opponentDistanceMetres = finiteOrZero(opponentDistanceMetres);
+    this.eventDistanceMetres = Number.isFinite(eventDistanceMetres)
+      ? Math.max(1, eventDistanceMetres)
+      : 145;
     this.renderTacticalPositions();
   }
 
-  setGapSeconds(gapSeconds: number): void {
-    this.gapSeconds = Number.isFinite(gapSeconds)
-      ? Math.max(0, gapSeconds)
+  setRaceGap(
+    relativeGapSeconds: number,
+    relation: GapRelation,
+  ): void {
+    this.relativeGapSeconds = Number.isFinite(relativeGapSeconds)
+      ? relativeGapSeconds
       : 0;
+    this.gapRelation = relation;
     this.renderGap();
   }
 
@@ -244,6 +302,19 @@ export class EngineerPanel {
     this.intentAvailable = available;
     this.committedPlan = committedPlan;
     this.acknowledgementText = acknowledgement;
+    this.renderIntentState();
+  }
+
+  setGameplayState(
+    nowAvailable: boolean,
+    nowCalled: boolean,
+    retryAvailable: boolean,
+    driverMessage: DriverMessageKey | null,
+  ): void {
+    this.nowAvailable = nowAvailable;
+    this.nowCalled = nowCalled;
+    this.retryAvailable = retryAvailable;
+    this.driverMessage = driverMessage;
     this.renderIntentState();
   }
 
@@ -265,7 +336,6 @@ export class EngineerPanel {
     this.playerLegend.textContent = text.playerCar;
     this.opponentLegend.textContent = text.opponent;
     this.tacticalMap.setAttribute('aria-label', text.tacticalMap);
-    this.gapLabel.textContent = text.gap;
     this.intentHeading.textContent = text.intentCall;
     this.planLabel.textContent = text.plan;
 
@@ -294,21 +364,82 @@ export class EngineerPanel {
   private renderTacticalPositions(): void {
     const corridorHalfWidth = Math.max(1, this.corridorWidthMetres * 0.5);
     const pixelsPerMetre = 34 / corridorHalfWidth;
-    // The car controller's positive lateral basis is physical left on the test
-    // approach, so invert it to make physical right read as map-right.
-    const playerX = 108 - this.playerLateralOffsetMetres * pixelsPerMetre;
-    const opponentX =
-      108 - this.opponentLateralOffsetMetres * pixelsPerMetre;
-    this.playerMarker.setAttribute('transform', `translate(${playerX} 128)`);
+    const averageDistance =
+      (this.playerDistanceMetres + this.opponentDistanceMetres) * 0.5;
+    const centre = this.getTacticalPathFrame(averageDistance);
+    const gapMetres =
+      this.opponentDistanceMetres - this.playerDistanceMetres;
+    const gapPixels = clamp(gapMetres * 1.75, -32, 32);
+    const playerAlong = -gapPixels * 0.5;
+    const opponentAlong = gapPixels * 0.5;
+    const playerMapX =
+      centre.x + centre.tangentX * playerAlong +
+      centre.normalX * this.playerLateralOffsetMetres * pixelsPerMetre;
+    const playerMapY =
+      centre.y + centre.tangentY * playerAlong +
+      centre.normalY * this.playerLateralOffsetMetres * pixelsPerMetre;
+    const opponentMapX =
+      centre.x + centre.tangentX * opponentAlong +
+      centre.normalX * this.opponentLateralOffsetMetres * pixelsPerMetre;
+    const opponentMapY =
+      centre.y + centre.tangentY * opponentAlong +
+      centre.normalY * this.opponentLateralOffsetMetres * pixelsPerMetre;
+    this.playerMarker.setAttribute(
+      'transform',
+      `translate(${playerMapX} ${playerMapY}) rotate(${centre.rotationDegrees})`,
+    );
     this.opponentMarker.setAttribute(
       'transform',
-      `translate(${opponentX} 86)`,
+      `translate(${opponentMapX} ${opponentMapY}) rotate(${centre.rotationDegrees})`,
     );
+  }
+
+  private getTacticalPathFrame(distanceMetres: number): {
+    x: number;
+    y: number;
+    tangentX: number;
+    tangentY: number;
+    normalX: number;
+    normalY: number;
+    rotationDegrees: number;
+  } {
+    const pathLength = Math.max(1, this.tacticalRoadPath.getTotalLength());
+    const inset = 24;
+    const phase = clamp01(distanceMetres / this.eventDistanceMetres);
+    const pathDistance = inset + phase * Math.max(1, pathLength - inset * 2);
+    const before = this.tacticalRoadPath.getPointAtLength(
+      Math.max(0, pathDistance - 1),
+    );
+    const after = this.tacticalRoadPath.getPointAtLength(
+      Math.min(pathLength, pathDistance + 1),
+    );
+    const point = this.tacticalRoadPath.getPointAtLength(pathDistance);
+    const length = Math.max(0.001, Math.hypot(after.x - before.x, after.y - before.y));
+    const tangentX = (after.x - before.x) / length;
+    const tangentY = (after.y - before.y) / length;
+    return {
+      x: point.x,
+      y: point.y,
+      tangentX,
+      tangentY,
+      // Screen-space left of the path direction; model-positive is physical left.
+      normalX: tangentY,
+      normalY: -tangentX,
+      rotationDegrees: (Math.atan2(tangentY, tangentX) * 180) / Math.PI + 90,
+    };
   }
 
   private renderGap(): void {
     const text = getUiText(this.language);
-    const formattedGap = this.gapSeconds.toFixed(1);
+    const magnitude = Math.abs(this.relativeGapSeconds);
+    const formattedGap =
+      this.gapRelation === 'ahead'
+        ? `+${magnitude.toFixed(1)}`
+        : this.gapRelation === 'sideBySide'
+          ? '0.0'
+          : magnitude.toFixed(1);
+    this.gapLabel.textContent = text.gapRelation[this.gapRelation];
+    this.gapCard.dataset.relation = this.gapRelation;
     this.gapValue.value = formattedGap;
     this.gapValue.textContent = formattedGap;
     this.gapUnit.textContent = text.units.seconds;
@@ -339,9 +470,18 @@ export class EngineerPanel {
       button.setAttribute('aria-pressed', selected.toString());
     });
 
-    this.acknowledgement.hidden = this.acknowledgementText === null;
-    this.acknowledgement.value = this.acknowledgementText ?? '';
-    this.acknowledgement.textContent = this.acknowledgementText ?? '';
+    this.nowButton.textContent = text.now;
+    this.nowButton.disabled = !this.nowAvailable;
+    this.nowButton.classList.toggle('is-called', this.nowCalled);
+    this.retryButton.textContent = text.retry;
+    this.retryButton.hidden = !this.retryAvailable;
+
+    const radioText = this.driverMessage
+      ? text.driverMessage[this.driverMessage]
+      : this.acknowledgementText;
+    this.acknowledgement.hidden = radioText === null;
+    this.acknowledgement.value = radioText ?? '';
+    this.acknowledgement.textContent = radioText ?? '';
   }
 }
 
@@ -370,17 +510,25 @@ function createSvgElement<K extends keyof SVGElementTagNameMap>(
 function createCarMarker(className: string): SVGGElement {
   const marker = createSvgElement('g', `tactical-map__car ${className}`);
   const body = createSvgElement('rect', 'tactical-map__car-body');
-  body.setAttribute('x', '-7');
-  body.setAttribute('y', '-11');
-  body.setAttribute('width', '14');
-  body.setAttribute('height', '22');
-  body.setAttribute('rx', '3');
+  body.setAttribute('x', '-5');
+  body.setAttribute('y', '-6');
+  body.setAttribute('width', '10');
+  body.setAttribute('height', '12');
+  body.setAttribute('rx', '2');
   const heading = createSvgElement('path', 'tactical-map__car-heading');
-  heading.setAttribute('d', 'M -4 -7 L 0 -12 L 4 -7');
+  heading.setAttribute('d', 'M -3 -4 L 0 -8 L 3 -4');
   marker.append(body, heading);
   return marker;
 }
 
 function finiteOrZero(value: number): number {
   return Number.isFinite(value) ? value : 0;
+}
+
+function clamp01(value: number): number {
+  return Math.max(0, Math.min(1, value));
+}
+
+function clamp(value: number, minimum: number, maximum: number): number {
+  return Math.max(minimum, Math.min(maximum, value));
 }

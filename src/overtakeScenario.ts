@@ -30,8 +30,8 @@ export interface OvertakeScenarioSnapshot {
  * the scenario beat, not a hidden player timing window or a command outcome.
  */
 export const OVERTAKE_SCENARIO = Object.freeze({
-  approachStartProgress: 0.56,
-  defenseStartProgress: 0.62,
+  approachStartProgress: 0.42,
+  defenseStartProgress: 0.48,
   cornerEntryProgress: 0.88,
   apexProgress: 0.93,
   recoveryEndProgress: 0.99,
@@ -221,7 +221,7 @@ export class OvertakeScenarioController {
   }
 }
 
-function createOpponentCar(): THREE.Group {
+export function createOpponentCar(): THREE.Group {
   const group = new THREE.Group();
   group.name = 'opponent-car';
 

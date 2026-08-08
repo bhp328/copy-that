@@ -6,8 +6,8 @@ const BASE_ROAD_WIDTH = 8.5;
 
 /** Local-only width staging for the overtake approach; the rest stays compact. */
 export const OVERTAKE_APPROACH_SPACE = Object.freeze({
-  widenStartProgress: 0.49,
-  fullWidthStartProgress: 0.55,
+  widenStartProgress: 0.39,
+  fullWidthStartProgress: 0.45,
   fullWidthEndProgress: 0.91,
   narrowEndProgress: 0.995,
   width: 12.4,
@@ -266,7 +266,7 @@ function addApproachReferenceMarks(
     opacity: 0.58,
   });
 
-  for (let progress = 0.54; progress <= 0.875; progress += 0.024) {
+  for (let progress = 0.43; progress <= 0.875; progress += 0.024) {
     const point = curve.getPointAt(progress);
     const frame = getTrackFrame(curve, progress);
     const marker = new THREE.Mesh(markerGeometry, markerMaterial);
