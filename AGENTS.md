@@ -51,3 +51,15 @@
   - `docs/current.md`: current approved state, active milestone, and backlog.
   - `docs/codex-log.md`: historical decisions, experiments, and evidence.
   - `docs/overtake-sim.md`: detailed overtake simulation evidence.
+
+## Continuity and milestone review
+
+- At a material milestone, update `docs/current.md` if current truth changed;
+  add only durable decisions and evidence to `docs/codex-log.md`. Do not
+  duplicate reports or treat either file as a full chat transcript.
+- Treat human feedback as evidence, not a universal claim. Repeated observed
+  playtest behavior and measured project evidence can outweigh generic design
+  theory; theory should guide hypotheses and flag risks, not redesign approved play.
+- Before a milestone commit, review the actual diff for scope, regressions,
+  stale docs, generated files, and missing verification. This review has no
+  authority to retune or redesign gameplay.

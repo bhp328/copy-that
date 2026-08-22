@@ -36,6 +36,16 @@
 - The deterministic overtake simulator exists: `npm run sim:overtake`.
 - Developer diagnostics: `?debug=1`; `COPY TEST REPORT` is available there.
 
+## Continuity and Evidence Governance
+
+- This file is the compact handoff for a new task; update it only when current
+  project truth, approval state, or the active boundary changes.
+- `docs/codex-log.md` preserves material historical decisions and evidence;
+  it is not a duplicate status report or chat transcript.
+- Human feedback is important evidence, but a single reaction does not prove
+  universal appeal. Strong repeated observed playtest behavior and measured
+  project evidence outrank generic theory; theory informs hypotheses and risks.
+
 ## Next Milestone
 
 **Communication Feel** — make the approved fun loop feel like communication
