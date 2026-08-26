@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { CarController } from './carController';
 import { OvertakeDebugPanel } from './debugPanel';
 import { EngineerPanel } from './engineerPanel';
+import type { DriverCommand } from './commandParser';
 import type { IntentPlan } from './intentCall';
 import {
   CoreOvertakeController,
@@ -35,6 +36,16 @@ liveIndicator.className = 'driver-feed__live-indicator';
 liveIndicator.setAttribute('aria-hidden', 'true');
 feedIdentity.append(feedLabel, liveIndicator, feedStatus);
 driverFeed.append(feedIdentity);
+
+const feedBriefing = document.createElement('section');
+feedBriefing.className = 'driver-feed__briefing';
+const feedBriefingTitle = document.createElement('span');
+feedBriefingTitle.className = 'driver-feed__briefing-title';
+const feedBriefingText = document.createElement('p');
+feedBriefingText.className = 'driver-feed__briefing-text';
+feedBriefing.append(feedBriefingTitle, feedBriefingText);
+driverFeed.append(feedBriefing);
+
 app.append(driverFeed);
 
 const scene = new THREE.Scene();
@@ -97,25 +108,40 @@ const engineerPanel = new EngineerPanel({
   parent: app,
   driverFeedLabel: feedLabel,
   driverFeedStatus: feedStatus,
+  driverFeedBriefing: feedBriefing,
+  driverFeedBriefingTitle: feedBriefingTitle,
+  driverFeedBriefingText: feedBriefingText,
   onIntentCall: handleIntentCall,
   onNowCall: handleNowCall,
   onRetry: handleRetry,
+  onRadioCommand: handleRadioCommand,
 });
 
 const debugPanel = debugEnabled
   ? new OvertakeDebugPanel(app, overtake)
   : null;
 
-function handleIntentCall(plan: IntentPlan): void {
-  if (overtake.issueIntent(plan)) {
+function handleIntentCall(plan: IntentPlan): boolean {
+  const accepted = overtake.issueIntent(plan);
+  if (accepted) {
     renderGameplay(overtake.snapshot);
   }
+  return accepted;
 }
 
-function handleNowCall(): void {
-  if (overtake.issueNow()) {
+function handleNowCall(): boolean {
+  const accepted = overtake.issueNow();
+  if (accepted) {
     renderGameplay(overtake.snapshot);
   }
+  return accepted;
+}
+
+function handleRadioCommand(command: DriverCommand): boolean {
+  if (command === 'now') {
+    return handleNowCall();
+  }
+  return handleIntentCall(command);
 }
 
 function handleRetry(): void {

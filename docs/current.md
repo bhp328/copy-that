@@ -35,6 +35,17 @@
 - First complete overtake Core Loop is human-playtest approved.
 - The deterministic overtake simulator exists: `npm run sim:overtake`.
 - Developer diagnostics: `?debug=1`; `COPY TEST REPORT` is available there.
+- Communication Feel passed its human Fun Gate on 2026-08-26. The Engineer
+  Panel now has a Driver Radio text affordance with a deliberately narrow
+  English/Korean command parser for INSIDE, OUTSIDE, and NOW. The original
+  buttons remain the reliable fallback. State-driven Driver acknowledgements,
+  an immediate Engineer Brief, and the mobile radio layout make the
+  communication loop readable without changing the overtake model.
+- Browser-native speech recognition was unavailable in the current local QA
+  browser, so voice is intentionally omitted from the submission build. Text
+  and buttons remain the stable, deterministic control paths.
+- `npm run build` and a production-preview browser smoke have passed for the
+  current worktree; the generated `dist` is ready for root-path static hosting.
 
 ## Continuity and Evidence Governance
 
@@ -48,14 +59,14 @@
 
 ## Next Milestone
 
-**Communication Feel** — make the approved fun loop feel like communication
-with an AI Driver rather than a button game. Do not implement it unless a task
-explicitly authorizes it.
+**Submission handoff** — Communication Feel has passed its human Fun Gate and
+the local production build is verified. The remaining work is external static
+hosting/submission, if a destination and account are supplied.
 
 ## Backlog — Not Authorized
 
 - INSIDE/OUTSIDE re-call; feint/bait; opponent response to visible Driver positioning.
-- Voice/STT, TTS, natural-language parser, Driver personality/trust.
+- Voice/STT, TTS, Driver personality/trust.
 - Clutch save, spin, collision, DNF.
 - Audio, graphics polish, high-G effects.
 - Performance optimization unless measured evidence justifies it.

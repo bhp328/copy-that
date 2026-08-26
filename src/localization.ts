@@ -6,6 +6,7 @@ import type {
 import type { IntentPlan } from './intentCall';
 import type { GapRelation } from './overtakeGameplay';
 import type { DefenseSide } from './overtakeScenario';
+import type { DriverCommand } from './commandParser';
 
 export type Language = 'en' | 'ko';
 
@@ -32,6 +33,19 @@ export interface UiText {
   intent: Record<IntentPlan, string>;
   now: string;
   retry: string;
+  briefingTitle: string;
+  briefing: string;
+  radio: string;
+  radioDriver: string;
+  radioHint: string;
+  radioPlaceholder: string;
+  transmit: string;
+  radioStatus: {
+    idle: string;
+    unrecognized: string;
+    unavailable: string;
+    sent: Record<DriverCommand, string>;
+  };
   driverMessage: {
     copyInside: string;
     copyOutside: string;
@@ -39,6 +53,7 @@ export interface UiText {
     tooSoon: string;
     tooLate: string;
     noRoom: string;
+    noCall: string;
     gotHim: string;
   };
   commandLabel: string;
@@ -101,14 +116,32 @@ export const UI_TEXT = {
     },
     now: 'NOW',
     retry: 'RETRY EVENT',
+    briefingTitle: 'ENGINEER BRIEF',
+    briefing: 'Read the defense. Call a line. Then call NOW.',
+    radio: 'DRIVER RADIO',
+    radioDriver: 'DRIVER',
+    radioHint: 'Type one clear call. Buttons stay live as your fallback.',
+    radioPlaceholder: 'e.g. OUTSIDE / NOW',
+    transmit: 'TRANSMIT',
+    radioStatus: {
+      idle: 'CHANNEL OPEN',
+      unrecognized: 'USE INSIDE, OUTSIDE, OR NOW',
+      unavailable: 'DRIVER CANNOT TAKE THAT CALL YET',
+      sent: {
+        inside: 'TRANSMITTED: INSIDE',
+        outside: 'TRANSMITTED: OUTSIDE',
+        now: 'TRANSMITTED: NOW',
+      },
+    },
     driverMessage: {
-      copyInside: 'Copy. Inside.',
-      copyOutside: 'Copy. Outside.',
-      now: 'Now.',
-      tooSoon: 'Too soon.',
-      tooLate: 'Too late.',
-      noRoom: 'No room.',
-      gotHim: 'Got him.',
+      copyInside: 'Copy. Inside line set.',
+      copyOutside: 'Copy. Outside line set.',
+      now: 'On it.',
+      tooSoon: 'Too soon. Still setting up.',
+      tooLate: "Window's gone. Resetting.",
+      noRoom: 'No room there. Hold.',
+      noCall: 'No call. Resetting for another run.',
+      gotHim: "Clear. We've got him.",
     },
     commandLabel: 'Engineer command',
     command: {
@@ -180,14 +213,32 @@ export const UI_TEXT = {
     },
     now: '지금',
     retry: '이벤트 다시 시도',
+    briefingTitle: '엔지니어 브리핑',
+    briefing: '방어를 읽고 라인을 지시하세요. 준비가 끝나면 지금을 외치세요.',
+    radio: '드라이버 무전',
+    radioDriver: '드라이버',
+    radioHint: '명확한 한 가지 지시만 입력하세요. 버튼도 언제나 사용할 수 있습니다.',
+    radioPlaceholder: '예: 아웃사이드 / 지금',
+    transmit: '전송',
+    radioStatus: {
+      idle: '채널 열림',
+      unrecognized: '인사이드, 아웃사이드 또는 지금을 사용하세요',
+      unavailable: '지금은 드라이버가 그 지시를 받을 수 없습니다',
+      sent: {
+        inside: '전송됨: 인사이드',
+        outside: '전송됨: 아웃사이드',
+        now: '전송됨: 지금',
+      },
+    },
     driverMessage: {
-      copyInside: '확인. 인사이드.',
-      copyOutside: '확인. 아웃사이드.',
-      now: '지금.',
-      tooSoon: '너무 일러.',
-      tooLate: '너무 늦었어.',
-      noRoom: '공간 없어.',
-      gotHim: '잡았어.',
+      copyInside: '확인. 인사이드 라인 잡는다.',
+      copyOutside: '확인. 아웃사이드 라인 잡는다.',
+      now: '간다.',
+      tooSoon: '너무 일러. 아직 준비 중이야.',
+      tooLate: '창이 닫혔어. 다시 정비한다.',
+      noRoom: '그쪽은 공간이 없어. 유지한다.',
+      noCall: '지시 없음. 다음 기회로 리셋한다.',
+      gotHim: '클리어. 잡았어.',
     },
     commandLabel: '엔지니어 지시',
     command: {

@@ -1,5 +1,56 @@
 # Codex Log
 
+## 2026-08-25 - Communication Feel experiment (pre-Fun Gate)
+
+### Goal and implementation
+
+- Added a compact Driver Radio text affordance to the Engineer Panel while
+  retaining the approved INSIDE / OUTSIDE / NOW buttons as the reliable path.
+- Added a deliberately narrow, deterministic parser for clear English and
+  Korean variants of INSIDE, OUTSIDE, and NOW. Ambiguous or conversational
+  input is rejected rather than becoming freeform Driver behavior.
+- Parsed commands route to the existing `issueIntent` / `issueNow` calls; the
+  overtake model, timing parameters, and approved balance are unchanged.
+
+### Verification
+
+- The command-parser regression script covers recognized English/Korean calls
+  plus ambiguous and conversational rejection cases.
+- Focused browser smoke testing verified radio heading/layout, rejected input,
+  accepted OUTSIDE and NOW routing, existing Driver acknowledgement, retained
+  buttons, and zero browser console warnings/errors.
+- At this stage, this was not a human Fun Gate or an approved gameplay
+  checkpoint. No commit was created; audio and voice recognition were
+  intentionally deferred.
+
+### Release-focused presentation pass (2026-08-26)
+
+- Added a compact in-world Engineer Brief so the opening immediately explains
+  the role without revealing the correct answer. It disappears after an intent
+  is issued and returns on Retry.
+- Reworked the narrow/mobile Engineer Panel layout so its radio, tactical
+  facts, intent buttons, and NOW control remain simultaneously visible. Driver
+  replies use the existing radio-status line on mobile so an acknowledgement
+  cannot push the timing control off-screen.
+- Strengthened only state-driven copy: acknowledgement, too-soon, too-late,
+  no-room, no-call, and successful-pass responses describe the Driver's actual
+  situation. The pure overtake model and its tuning are unchanged.
+- Native browser speech recognition was unavailable in the local QA browser;
+  voice was deliberately omitted rather than adding an unreliable, secret- or
+  backend-dependent path.
+- Verified `npm run test:commands`, `npm run sim:overtake`, `npm run build`,
+  a production-preview success path via typed OUTSIDE then NOW, a too-early
+  failure followed by Retry, English/Korean radio parsing, desktop/mobile
+  layout, and clean browser console output.
+
+### Human Fun Gate (2026-08-26)
+
+- The human approved the Communication Feel milestone: the radio affordance,
+  contextual Driver reply, briefing, and button fallback successfully make the
+  approved overtake loop feel like communication with a capable Driver.
+- This approval authorizes a checkpoint for the completed Communication Feel
+  and submission-preparation work. The overtake balance remains unchanged.
+
 ## 2026-08-08 - Core-loop human-timing correction (uncommitted)
 
 ### Correction

@@ -98,6 +98,45 @@ body {
   color: #ff9ca5;
 }
 
+.driver-feed__briefing {
+  position: absolute;
+  z-index: 3;
+  bottom: clamp(14px, 2vw, 24px);
+  left: clamp(12px, 2vw, 24px);
+  display: grid;
+  gap: 5px;
+  width: min(278px, calc(100% - 48px));
+  padding: 10px 12px;
+  border: 1px solid rgb(255 212 59 / 44%);
+  border-left: 3px solid #ffd43b;
+  border-radius: 4px;
+  background: rgb(5 12 18 / 76%);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 30%);
+  backdrop-filter: blur(7px);
+}
+
+.driver-feed__briefing[hidden] {
+  display: none;
+}
+
+.driver-feed__briefing-title {
+  color: #ffe58a;
+  font-size: clamp(0.62rem, 0.95vw, 0.72rem);
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.driver-feed__briefing-text {
+  margin: 0;
+  color: #f4fbfe;
+  font-size: clamp(0.7rem, 1.05vw, 0.82rem);
+  font-weight: 750;
+  letter-spacing: 0.025em;
+  line-height: 1.35;
+}
+
 .engineer-panel {
   position: relative;
   z-index: 4;
@@ -395,6 +434,114 @@ body {
   letter-spacing: 0.035em;
 }
 
+.engineer-radio {
+  display: grid;
+  gap: 7px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgb(90 216 225 / 30%);
+  border-left: 3px solid #35d8e1;
+  border-radius: 4px;
+  background: linear-gradient(100deg, rgb(15 75 84 / 32%), rgb(2 10 16 / 50%) 72%);
+}
+
+.engineer-radio__header,
+.engineer-radio__controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.engineer-radio__header {
+  justify-content: space-between;
+}
+
+.engineer-radio__heading {
+  margin: 0;
+  color: #d5fcff;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.engineer-radio__signal {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #70eac3;
+  box-shadow: 0 0 0 3px rgb(112 234 195 / 12%), 0 0 12px rgb(112 234 195 / 56%);
+}
+
+.engineer-radio__hint,
+.engineer-radio__status {
+  margin: 0;
+  font-size: 0.64rem;
+  font-weight: 750;
+  letter-spacing: 0.045em;
+}
+
+.engineer-radio__hint {
+  color: #96abb4;
+  line-height: 1.35;
+}
+
+.engineer-radio__input {
+  min-width: 0;
+  flex: 1;
+  height: 34px;
+  padding: 0 9px;
+  border: 1px solid #54737d;
+  border-radius: 3px;
+  color: #effdff;
+  background: rgb(3 17 24 / 86%);
+  font: 800 0.72rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.engineer-radio__input::placeholder {
+  color: #66808a;
+  opacity: 1;
+}
+
+.engineer-radio__input:focus-visible,
+.engineer-radio__send:focus-visible {
+  outline: 2px solid #b5fbff;
+  outline-offset: 2px;
+}
+
+.engineer-radio__send {
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid #63dae3;
+  border-radius: 3px;
+  color: #dfffff;
+  background: #164650;
+  cursor: pointer;
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.09em;
+}
+
+.engineer-radio__send:hover {
+  border-color: #d5feff;
+  background: #1c5e6a;
+}
+
+.engineer-radio__status {
+  color: #8eb5bd;
+}
+
+.engineer-radio__status[data-status='sent'] {
+  color: #7cedc7;
+}
+
+.engineer-radio__status[data-status='unrecognized'],
+.engineer-radio__status[data-status='unavailable'] {
+  color: #ffbf9c;
+}
+
 .engineer-intent {
   display: grid;
   gap: 11px;
@@ -580,7 +727,7 @@ body {
 
 @media (max-width: 760px) {
   #app.prototype-shell {
-    grid-template-rows: minmax(0, 65fr) minmax(270px, 35fr);
+    grid-template-rows: minmax(0, 0.95fr) minmax(390px, 1.05fr);
     grid-template-columns: 1fr;
   }
 
@@ -591,7 +738,15 @@ body {
 
   .engineer-panel {
     padding: 12px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     box-shadow: 0 -16px 42px rgb(0 0 0 / 30%);
+  }
+
+  .driver-feed__briefing {
+    bottom: 12px;
+    width: min(278px, calc(100% - 24px));
   }
 
   .engineer-panel__header {
@@ -608,6 +763,8 @@ body {
   }
 
   .engineer-panel__information {
+    flex: 0 0 auto;
+    grid-template-rows: auto;
     grid-template-columns: 0.9fr 1.4fr 0.75fr;
     align-content: stretch;
     gap: 7px;
@@ -615,8 +772,15 @@ body {
   }
 
   .engineer-panel__acknowledgement {
+    display: none;
     margin-top: 7px;
     padding-block: 6px;
+  }
+
+  .engineer-radio {
+    gap: 6px;
+    margin-top: 8px;
+    padding: 8px 10px;
   }
 
   .engineer-intent {
@@ -655,6 +819,14 @@ body {
 
   .tactical-map__legend {
     display: none;
+  }
+}
+
+@media (max-height: 560px) and (min-width: 761px) {
+  .engineer-panel {
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 }
 

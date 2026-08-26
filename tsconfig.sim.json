@@ -9,5 +9,10 @@
     "rootDir": ".",
     "lib": ["ES2022", "DOM"]
   },
-  "include": ["src/overtakeModel.ts", "scripts/sim-overtake.ts"]
+  "include": [
+    "src/overtakeModel.ts",
+    "src/commandParser.ts",
+    "scripts/sim-overtake.ts",
+    "scripts/sim-commands.ts"
+  ]
 }

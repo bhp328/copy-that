@@ -1,4 +1,5 @@
 import type { CornerDirection } from './cornerGameplay';
+import { parseDriverCommand, type DriverCommand } from './commandParser';
 import {
   getUiText,
   LANGUAGE_LABELS,
@@ -14,11 +15,17 @@ export interface EngineerPanelOptions {
   parent: HTMLElement;
   driverFeedLabel: HTMLElement;
   driverFeedStatus: HTMLElement;
+  driverFeedBriefing: HTMLElement;
+  driverFeedBriefingTitle: HTMLElement;
+  driverFeedBriefingText: HTMLElement;
   initialLanguage?: Language;
   onIntentCall?: (plan: IntentPlan) => void;
   onNowCall?: () => void;
   onRetry?: () => void;
+  onRadioCommand?: (command: DriverCommand) => boolean;
 }
+
+type RadioStatus = 'idle' | 'unrecognized' | 'unavailable' | 'sent';
 
 const LANGUAGES: readonly Language[] = ['en', 'ko'];
 
@@ -27,6 +34,9 @@ export class EngineerPanel {
 
   private readonly driverFeedLabel: HTMLElement;
   private readonly driverFeedStatus: HTMLElement;
+  private readonly driverFeedBriefing: HTMLElement;
+  private readonly driverFeedBriefingTitle: HTMLElement;
+  private readonly driverFeedBriefingText: HTMLElement;
   private readonly heading: HTMLHeadingElement;
   private readonly languageToggle: HTMLDivElement;
   private readonly languageButtons = new Map<Language, HTMLButtonElement>();
@@ -46,6 +56,11 @@ export class EngineerPanel {
   private readonly gapValue: HTMLOutputElement;
   private readonly gapUnit: HTMLElement;
   private readonly acknowledgement: HTMLOutputElement;
+  private readonly radioHeading: HTMLElement;
+  private readonly radioInput: HTMLInputElement;
+  private readonly radioHint: HTMLElement;
+  private readonly radioSend: HTMLButtonElement;
+  private readonly radioStatus: HTMLOutputElement;
   private readonly intentSection: HTMLElement;
   private readonly intentHeading: HTMLElement;
   private readonly planLabel: HTMLElement;
@@ -56,6 +71,7 @@ export class EngineerPanel {
   private readonly onIntentCall?: (plan: IntentPlan) => void;
   private readonly onNowCall?: () => void;
   private readonly onRetry?: () => void;
+  private readonly onRadioCommand?: (command: DriverCommand) => boolean;
 
   private language: Language;
   private cornerDirection: CornerDirection = 'right';
@@ -75,14 +91,20 @@ export class EngineerPanel {
   private nowAvailable = false;
   private nowCalled = false;
   private retryAvailable = false;
+  private radioState: RadioStatus = 'idle';
+  private radioCommand: DriverCommand | null = null;
 
   constructor(options: EngineerPanelOptions) {
     this.language = options.initialLanguage ?? 'en';
     this.driverFeedLabel = options.driverFeedLabel;
     this.driverFeedStatus = options.driverFeedStatus;
+    this.driverFeedBriefing = options.driverFeedBriefing;
+    this.driverFeedBriefingTitle = options.driverFeedBriefingTitle;
+    this.driverFeedBriefingText = options.driverFeedBriefingText;
     this.onIntentCall = options.onIntentCall;
     this.onNowCall = options.onNowCall;
     this.onRetry = options.onRetry;
+    this.onRadioCommand = options.onRadioCommand;
 
     this.element = createElement('aside', 'engineer-panel');
     this.element.setAttribute('aria-label', 'Engineer');
@@ -116,6 +138,39 @@ export class EngineerPanel {
     this.acknowledgement.setAttribute('aria-live', 'assertive');
     this.acknowledgement.setAttribute('aria-atomic', 'true');
     this.acknowledgement.hidden = true;
+
+    const radioSection = createElement('section', 'engineer-radio');
+    const radioHeader = createElement('div', 'engineer-radio__header');
+    this.radioHeading = createElement('h2', 'engineer-radio__heading');
+    const radioSignal = createElement('span', 'engineer-radio__signal');
+    radioSignal.setAttribute('aria-hidden', 'true');
+    radioHeader.append(this.radioHeading, radioSignal);
+    this.radioHint = createElement('p', 'engineer-radio__hint');
+    const radioControls = createElement('div', 'engineer-radio__controls');
+    this.radioInput = createElement('input', 'engineer-radio__input');
+    this.radioInput.type = 'text';
+    this.radioInput.autocomplete = 'off';
+    this.radioInput.spellcheck = false;
+    this.radioInput.setAttribute('aria-describedby', 'driver-radio-hint');
+    this.radioInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        this.transmitRadioCommand();
+      }
+    });
+    this.radioSend = createElement('button', 'engineer-radio__send');
+    this.radioSend.type = 'button';
+    this.radioSend.addEventListener('click', () => this.transmitRadioCommand());
+    radioControls.append(this.radioInput, this.radioSend);
+    this.radioStatus = createElement('output', 'engineer-radio__status');
+    this.radioStatus.setAttribute('role', 'status');
+    this.radioStatus.setAttribute('aria-live', 'polite');
+    radioSection.append(
+      radioHeader,
+      this.radioHint,
+      radioControls,
+      this.radioStatus,
+    );
 
     const information = createElement('div', 'engineer-panel__information');
 
@@ -245,6 +300,7 @@ export class EngineerPanel {
     this.element.append(
       header,
       this.acknowledgement,
+      radioSection,
       information,
       this.intentSection,
     );
@@ -328,6 +384,9 @@ export class EngineerPanel {
     const text = getUiText(this.language);
     this.driverFeedLabel.textContent = text.driverFeed;
     this.driverFeedStatus.textContent = text.live;
+    this.driverFeedBriefing.setAttribute('aria-label', text.briefingTitle);
+    this.driverFeedBriefingTitle.textContent = text.briefingTitle;
+    this.driverFeedBriefingText.textContent = text.briefing;
     this.heading.textContent = text.engineer;
     this.element.setAttribute('aria-label', text.engineer);
     this.languageToggle.setAttribute('aria-label', text.language);
@@ -338,6 +397,12 @@ export class EngineerPanel {
     this.tacticalMap.setAttribute('aria-label', text.tacticalMap);
     this.intentHeading.textContent = text.intentCall;
     this.planLabel.textContent = text.plan;
+    this.radioHeading.textContent = text.radio;
+    this.radioInput.placeholder = text.radioPlaceholder;
+    this.radioInput.setAttribute('aria-label', text.radio);
+    this.radioHint.id = 'driver-radio-hint';
+    this.radioHint.textContent = text.radioHint;
+    this.radioSend.textContent = text.transmit;
 
     this.languageButtons.forEach((button, language) => {
       const selected = language === this.language;
@@ -349,6 +414,7 @@ export class EngineerPanel {
     this.renderTacticalPositions();
     this.renderGap();
     this.renderIntentState();
+    this.renderRadioState();
   }
 
   private renderNextCorner(): void {
@@ -454,6 +520,11 @@ export class EngineerPanel {
       ? text.intent[this.committedPlan]
       : text.emptyValue;
     this.planValue.textContent = this.planValue.value;
+    this.driverFeedBriefing.hidden = this.committedPlan !== null;
+    if (this.committedPlan === null && this.radioState === 'sent') {
+      this.radioState = 'idle';
+      this.radioCommand = null;
+    }
     this.intentSection.classList.toggle('is-available', controlsAvailable);
 
     if (this.committedPlan) {
@@ -482,6 +553,60 @@ export class EngineerPanel {
     this.acknowledgement.hidden = radioText === null;
     this.acknowledgement.value = radioText ?? '';
     this.acknowledgement.textContent = radioText ?? '';
+    this.renderRadioState();
+  }
+
+  private transmitRadioCommand(): void {
+    const parsed = parseDriverCommand(this.radioInput.value);
+    this.radioCommand = parsed.command;
+    if (parsed.command === null) {
+      this.radioState = 'unrecognized';
+      this.renderRadioState();
+      return;
+    }
+
+    const accepted = this.onRadioCommand?.(parsed.command) ?? false;
+    this.radioState = accepted ? 'sent' : 'unavailable';
+    if (accepted) {
+      this.radioInput.value = '';
+    }
+    this.renderRadioState();
+  }
+
+  private renderRadioState(): void {
+    const text = getUiText(this.language);
+    const driverText = this.driverMessage
+      ? text.driverMessage[this.driverMessage]
+      : this.acknowledgementText;
+    const driverReplyCanTakePriority =
+      this.radioState !== 'unrecognized' && this.radioState !== 'unavailable';
+    const status = driverText && driverReplyCanTakePriority
+      ? `${text.radioDriver}: ${driverText}`
+      : getRadioStatusText(text, this.radioState, this.radioCommand);
+    this.radioStatus.value = status;
+    this.radioStatus.textContent = status;
+    this.radioStatus.dataset.status = driverText && driverReplyCanTakePriority
+      ? 'sent'
+      : this.radioState;
+  }
+}
+
+function getRadioStatusText(
+  text: ReturnType<typeof getUiText>,
+  state: RadioStatus,
+  command: DriverCommand | null,
+): string {
+  switch (state) {
+    case 'sent':
+      return command === null
+        ? text.radioStatus.idle
+        : text.radioStatus.sent[command];
+    case 'unrecognized':
+      return text.radioStatus.unrecognized;
+    case 'unavailable':
+      return text.radioStatus.unavailable;
+    default:
+      return text.radioStatus.idle;
   }
 }
 

@@ -27,6 +27,7 @@ export type DriverMessageKey =
   | 'tooSoon'
   | 'tooLate'
   | 'noRoom'
+  | 'noCall'
   | 'gotHim';
 
 export type GapRelation = 'behind' | 'sideBySide' | 'ahead';
@@ -193,6 +194,9 @@ export class CoreOvertakeController {
           ? assessmentToOutcome(this.nowAssessment)
           : 'noCall';
         this.outcomeAtSeconds = this.model.timeSeconds;
+        if (this.outcome === 'noCall') {
+          this.setMessage('noCall', REACTION_SECONDS);
+        }
       }
       this.postEventSeconds += timeStep;
     }
