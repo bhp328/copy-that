@@ -131,6 +131,8 @@ export const UI_TEXT = {
         inside: 'TRANSMITTED: INSIDE',
         outside: 'TRANSMITTED: OUTSIDE',
         now: 'TRANSMITTED: NOW',
+        push: 'TRANSMITTED: PUSH',
+        hold: 'TRANSMITTED: HOLD',
       },
     },
     driverMessage: {
@@ -228,6 +230,8 @@ export const UI_TEXT = {
         inside: '전송됨: 인사이드',
         outside: '전송됨: 아웃사이드',
         now: '전송됨: 지금',
+        push: '전송됨: 푸시',
+        hold: '전송됨: 유지',
       },
     },
     driverMessage: {

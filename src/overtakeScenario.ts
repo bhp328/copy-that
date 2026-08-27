@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { GameplayCorner } from './cornerGameplay';
 import { getForwardDistanceMetres, wrapTrackProgress } from './cornerGameplay';
+import { createFormulaCar } from './formulaCar';
 
 export type DefenseSide = 'inside' | 'outside';
 
@@ -222,69 +223,12 @@ export class OvertakeScenarioController {
 }
 
 export function createOpponentCar(): THREE.Group {
-  const group = new THREE.Group();
-  group.name = 'opponent-car';
-
-  const bodyMaterial = new THREE.MeshStandardMaterial({
-    color: 0x24c8d9,
-    roughness: 0.38,
-    metalness: 0.12,
-    flatShading: true,
-  });
-  const darkMaterial = new THREE.MeshStandardMaterial({
-    color: 0x101820,
-    roughness: 0.68,
-    flatShading: true,
-  });
-  const lightMaterial = new THREE.MeshStandardMaterial({
-    color: 0xff384e,
-    emissive: 0x8f0919,
-    emissiveIntensity: 1.6,
-  });
-
-  const body = new THREE.Mesh(
-    new THREE.BoxGeometry(2.15, 0.62, 4.5),
-    bodyMaterial,
-  );
-  body.position.y = 0.72;
-  body.castShadow = true;
-
-  const cabin = new THREE.Mesh(
-    new THREE.BoxGeometry(1.62, 0.62, 1.85),
-    darkMaterial,
-  );
-  cabin.position.set(0, 1.23, -0.1);
-  cabin.castShadow = true;
-
-  const wing = new THREE.Mesh(
-    new THREE.BoxGeometry(2.65, 0.1, 0.48),
-    darkMaterial,
-  );
-  wing.position.set(0, 1.22, -2.05);
-  wing.castShadow = true;
-
-  const wheelGeometry = new THREE.CylinderGeometry(0.44, 0.44, 0.34, 10);
-  for (const x of [-1.12, 1.12]) {
-    for (const z of [-1.45, 1.42]) {
-      const wheel = new THREE.Mesh(wheelGeometry, darkMaterial);
-      wheel.rotation.z = Math.PI * 0.5;
-      wheel.position.set(x, 0.5, z);
-      wheel.castShadow = true;
-      group.add(wheel);
-    }
-  }
-
-  for (const x of [-0.72, 0.72]) {
-    const rearLight = new THREE.Mesh(
-      new THREE.BoxGeometry(0.42, 0.18, 0.08),
-      lightMaterial,
-    );
-    rearLight.position.set(x, 0.76, -2.29);
-    group.add(rearLight);
-  }
-
-  group.add(body, cabin, wing);
-  return group;
+  return createFormulaCar({
+    name: 'opponent-car',
+    bodyColor: 0x16d8d0,
+    accentColor: 0x1857ff,
+    helmetColor: 0xfff3c4,
+  }).group;
 }
 
 function inverseLerp(minimum: number, maximum: number, value: number): number {

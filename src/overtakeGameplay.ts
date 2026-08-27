@@ -37,6 +37,10 @@ export interface CoreOvertakeOptions {
   parameters?: OvertakeParameters;
   defenseMode?: DefenseSelectionMode;
   seed?: number;
+  /** Physical race position for the start of the protected overtake model. */
+  startTotalProgress?: number;
+  /** Preserve the prototype's lap-advancing event Retry behaviour by default. */
+  repeatAddsLap?: boolean;
 }
 
 export interface CoreOvertakeSnapshot {
@@ -96,6 +100,8 @@ export class CoreOvertakeController {
   private readonly parameters: OvertakeParameters;
   private readonly defenseMode: DefenseSelectionMode;
   private readonly seed: number;
+  private readonly startTotalProgress: number;
+  private readonly repeatAddsLap: boolean;
   private readonly tangent = new THREE.Vector3();
   private readonly lateral = new THREE.Vector3();
   private readonly up = new THREE.Vector3();
@@ -125,6 +131,10 @@ export class CoreOvertakeController {
     this.parameters = options.parameters ?? TUNED_OVERTAKE_PARAMETERS;
     this.defenseMode = options.defenseMode ?? 'seeded';
     this.seed = normalizeSeed(options.seed ?? createSessionSeed());
+    this.startTotalProgress = Number.isFinite(options.startTotalProgress)
+      ? Math.max(0, options.startTotalProgress ?? CORE_EVENT_START_PROGRESS)
+      : CORE_EVENT_START_PROGRESS;
+    this.repeatAddsLap = options.repeatAddsLap ?? true;
     this.currentDefenseSide = selectDefenseSide(
       this.defenseMode,
       this.seed,
@@ -209,6 +219,16 @@ export class CoreOvertakeController {
     if (!this.snapshot.canRetry) {
       return false;
     }
+    this.resetAttempt();
+    return true;
+  }
+
+  /** Full-race Retry can reset the protected model before the next event begins. */
+  restart(): void {
+    this.resetAttempt();
+  }
+
+  private resetAttempt(): void {
     this.scenarioIndex += 1;
     this.currentDefenseSide = selectDefenseSide(
       this.defenseMode,
@@ -227,19 +247,19 @@ export class CoreOvertakeController {
     this.nowCalledAtSeconds = null;
     this.outcomeAtSeconds = null;
     this.placeOpponent();
-    return true;
   }
 
   get snapshot(): CoreOvertakeSnapshot {
+    const eventLapOffset = this.repeatAddsLap ? this.scenarioIndex : 0;
     const playerTotalProgress =
-      this.scenarioIndex +
-      CORE_EVENT_START_PROGRESS +
+      eventLapOffset +
+      this.startTotalProgress +
       this.model.playerDistanceMetres / this.trackLength;
     const opponentDistanceMetres =
       this.model.playerDistanceMetres + this.model.longitudinalGapMetres;
     const opponentTotalProgress =
-      this.scenarioIndex +
-      CORE_EVENT_START_PROGRESS +
+      eventLapOffset +
+      this.startTotalProgress +
       opponentDistanceMetres / this.trackLength;
     const referenceGapSpeed = Math.max(
       MIN_GAP_SPEED_METRES_PER_SECOND,

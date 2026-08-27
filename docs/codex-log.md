@@ -1,5 +1,48 @@
 # Codex Log
 
+## 2026-08-27 - Stable North Star established
+
+- Established `docs/north-star.md` as the stable product and design constitution
+  after red-team/adversarial review, falsification-test design, and platform-
+  strategy review. It is separate from current implementation truth and may
+  change only through explicit user direction or strong playtest evidence
+  reviewed with the user.
+
+## 2026-08-26 - Submission vertical slice release candidate
+
+### Durable product decisions
+
+- Converted the approved encounter into one complete three-lap fictional race,
+  Meridian Sprint, with a P3 start, P2 target, beginning, escalation, overtake
+  climax, finish, debrief, and full Retry.
+- Preserved the exact approved overtake parameters and pure model. The larger
+  circuit changes only its physical placement inside the race.
+- Added one lightweight opening PUSH/HOLD decision to establish the
+  Engineer/Driver rhythm before the final-lap line and timing calls. It remains
+  deterministic and adds no fuel, tire, pit, or setup simulation.
+- Established the fictional Apex Vector / Car 27 identity and a dark race-ops
+  workstation presentation with the onboard feed as the dominant surface.
+- Replaced generic road-car silhouettes with primitive open-wheel cars, built a
+  designed closed circuit and venue language, and added procedural WebAudio.
+  These choices avoid an external asset or physics dependency.
+- Voice remains intentionally omitted because neither SpeechRecognition nor
+  webkitSpeechRecognition is available in the QA browser. Text and buttons map
+  into the same deterministic command path.
+
+### Verification evidence
+
+- The original ten-case overtake matrix and 30/60/120 FPS classifications pass;
+  the approved 3.75-4.70 s viable NOW interval is unchanged.
+- The command parser passes 23 English/Korean recognition and rejection cases,
+  including the new PUSH/HOLD family.
+- Screenshot-led browser QA covered title, normal racing, opening call, defense
+  reveal, preparation, NOW, successful P3-to-P2 pass, Too Soon, Too Late,
+  blocked, no-call, both result states, Retry, English/Korean, desktop, and
+  390x844 mobile. The production preview has no console warnings or errors.
+- The completed success-path race/debrief duration is about 2:06, inside the
+  target short-session range. Vite's existing Three.js chunk-size advisory
+  remains non-blocking and was not used to justify an unrelated refactor.
+
 ## 2026-08-25 - Communication Feel experiment (pre-Fun Gate)
 
 ### Goal and implementation

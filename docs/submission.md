@@ -1,87 +1,79 @@
 # COPY THAT? — Submission Notes
 
-## One-paragraph pitch
+## One-line
 
-**COPY THAT?** is a racing game where communication is the control system. You
-are not steering the car; you are the Race Engineer. The Driver has the hands
-and reflexes, while you have the tactical read. Watch an opponent commit to a
-defensive line, call INSIDE or OUTSIDE, let the Driver prepare, then make the
-timing call: **NOW**. A capable Driver can execute a good instruction, but
-cannot erase a bad Engineer decision.
+**A racing game where communication is the control system.**
+
+## Pitch
+
+You are the Race Engineer, not the Driver. Your Driver has the wheel and the
+reflexes; you have the tactical read. Watch a fictional Formula sprint through
+the live onboard feed, read information the Driver cannot process at speed, and
+compress it into short calls. PUSH to build the race, read a rival's defense,
+set INSIDE or OUTSIDE, then judge the moment to call NOW. The Driver can execute
+a good plan, but cannot erase a bad Engineer decision.
 
 ## How to play
 
-1. Read the Driver Feed and tactical panel as the opponent reveals its defense.
-2. Call a line with the **INSIDE** / **OUTSIDE** buttons or a short Driver Radio
-   command (for example `OUTSIDE`, `NOW`, `아웃사이드`, or `지금`). Buttons always
-   remain available as the reliable fallback.
-3. Give the Driver time to prepare, then call **NOW**. Calling too early,
-   too late, or into the occupied line produces a readable outcome.
-4. After a result, use **RETRY EVENT** for the next encounter.
+1. Press **START SESSION**. Mission: finish P2 or better in the three-lap Meridian Sprint.
+2. Use **PUSH** or **HOLD** when the opening pace decision appears.
+3. On the final-lap attack, read the rival's movement and call **INSIDE** or **OUTSIDE**.
+4. Let the Driver prepare, then call **NOW**. Too Soon, Too Late, the blocked line, and no-call each have deterministic consequences.
+5. Buttons are the permanent fallback. The Driver Radio text box accepts short English or Korean calls through the same deterministic command path.
 
 ## Technical architecture
 
-- Three.js, TypeScript, and Vite; browser-first with no backend or database.
-- Deterministic spline/curve arcade movement rather than a physics engine.
-- A narrow English/Korean command parser maps only clear intent calls to the
-  same deterministic `INSIDE` / `OUTSIDE` / `NOW` path as the buttons.
-- The model, not a language model, owns all preparation, gap, clearance, and
-  pass outcomes. No API keys or remote inference are required to play.
+- Three.js + TypeScript + Vite; vanilla browser-first implementation.
+- Deterministic Catmull-Rom circuit driving with no physics engine, backend, database, or client secret.
+- Race flow and simulation state are separate from Three.js rendering state.
+- A narrow natural-language parser maps English/Korean phrases to PUSH, HOLD, INSIDE, OUTSIDE, and NOW. No freeform chatbot or language model controls the car.
+- The approved overtake model owns gap, preparation, lane clearance, timing classification, and pass feasibility. Its CLI simulator protects the same behavior at 30, 60, and 120 FPS.
+- Procedural WebAudio supplies responsive engine, wind, radio, and outcome sound after the START gesture.
 
 ## Codex collaboration story
 
-The project keeps its design authority and evidence in `AGENTS.md` and
-`docs/current.md`, with historical decisions in `docs/codex-log.md`. A
-deterministic overtake simulation protects the approved loop across 30, 60,
-and 120 FPS, while the command-parser regression cases protect radio input.
-The team retained a rejected late-brake experiment as evidence rather than
-silently reviving it, then used browser QA to focus polish on communication,
-readability, localization, and retry flow instead of adding risky scope.
+- `AGENTS.md` preserves design authority and the rule that communication—not direct steering—is the control system.
+- `docs/current.md` carries the compact approved state; `docs/codex-log.md` keeps durable experiments and evidence instead of replaying chat history.
+- A rejected braking-call prototype remains documented rather than being quietly revived.
+- The approved overtake is protected by a deterministic ten-case simulator and command-parser regressions.
+- Human Fun Gates approved the core reactive overtake and later its communication feel before this vertical-slice production pass.
+- Game Studio's specialist Three.js, game-UI, and screenshot-led playtest guidance was used without allowing generic tooling to retune the approved core.
+- Release QA used representative WebGL screenshots across success, deterministic failures, English/Korean, desktop/mobile, finish, and Retry.
 
-## Suggested <=3 minute demo
+## <=3 minute demo plan
 
-**0:00-0:20 — Set the role**
+**0:00–0:20 — Establish the fantasy**
 
-Open on the Engineer Brief: “You do not drive the car. You drive the Driver.”
-Point out the Driver Feed as immediate race information and the Engineer Panel
-as the earlier tactical read.
+Show the Apex Vector Engineer Workstation and say: “You don't drive the car. You drive the Driver.” Point out the mission, live onboard feed, tactical track, and radio.
 
-**0:20-1:05 — Make one pass**
+**0:20–0:55 — First communication beat**
 
-Wait for the opponent to reveal its line. Call the open line through Driver
-Radio or the fallback buttons, let the Driver acknowledge and prepare, then
-call NOW. Let the pass complete and point out the Driver reaction plus the
-tactical map moving from BEHIND to AHEAD.
+Start the sprint, hear the radio check, and make the opening PUSH/HOLD call. Show that the Driver acknowledges and executes while the player never steers.
 
-**1:05-1:35 — Show that timing matters**
+**0:55–1:45 — Main attack**
 
-On the next attempt, call NOW too early or too late. Explain that the Driver
-does not become intentionally bad: the race state makes the Engineer's timing
-matter. Use Retry.
+Use the final-lap debug/demo jump if time is limited. Let the rival reveal its defense, call the open line, show the Driver preparing, then call NOW for the P3→P2 pass.
 
-**1:35-2:05 — Show accessibility of the control idea**
+**1:45–2:15 — Prove timing is gameplay**
 
-Switch to Korean and send a short Korean radio call, or use the visible button
-fallback. Emphasize that both paths map to the same deterministic Driver
-behavior.
+Restart the encounter and call NOW immediately for Too Soon, or wait for Too Late. Emphasize that the outcome comes from the deterministic race state, not random mishearing.
 
-**2:05-2:45 — Close on the build philosophy**
+**2:15–2:40 — Close the race**
 
-Mention the deterministic model, frame-rate regression simulation, and the
-decision to keep the prototype focused on one polished communication-driven
-overtake rather than inflate it with unreliable systems.
+Show the P2 target-achieved result and Retry. Briefly switch to Korean or send a Korean radio call if useful.
 
-## Build and static deployment
+**2:40–3:00 — Technology and collaboration**
+
+Mention Three.js/TypeScript/Vite, deterministic Driver behavior, language-to-command mapping, the overtake simulator, project rules/current truth, human Fun Gates, and screenshot-led release QA.
+
+## Local build and static deployment
 
 ```text
 npm ci
 npm run build
-```
-
-Upload the contents of `dist/` to a static host's root. The current Vite build
-uses root-relative hosting; if the host requires a subpath, rebuild with the
-appropriate Vite `--base` value before upload. For local production checking:
-
-```text
 npm run preview -- --host 127.0.0.1
 ```
+
+Upload the contents of `dist/` to a static host's root. The production build uses
+root-relative assets; rebuild with the appropriate Vite `--base` if a host serves
+the game from a subpath.

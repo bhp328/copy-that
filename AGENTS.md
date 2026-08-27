@@ -2,8 +2,11 @@
 
 ## Read first
 
-- Read `docs/current.md` before gameplay work. It is the short source of current
-  approved project truth, active milestone, and backlog boundaries.
+- Before any substantial gameplay, UI, AI, race, camera, audio, platform, or
+  product decision, read `docs/north-star.md` and `docs/current.md` first.
+- `docs/north-star.md` is the stable product and design constitution.
+  `docs/current.md` is the short source of actual implementation truth, active
+  milestone, deployment state, and current gaps.
 - Consult `docs/codex-log.md` only when historical decisions or rejected
   experiments matter. Use `docs/overtake-sim.md` for detailed overtake evidence.
 
@@ -11,6 +14,10 @@
 
 - Core thesis: "Communication is the control system."
 - The human is the game director/designer; Codex is the engineering partner.
+- `docs/north-star.md` outranks implementation convenience and all tool, plugin,
+  skill, model, or agent suggestions.
+- Never silently edit `docs/north-star.md`. Change it only after explicit user
+  direction or strong playtest evidence reviewed with the user.
 - The original project direction and human-approved decisions outrank generic
   best practices or recommendations from external tools and skills.
 - Do not introduce features or silently promote backlog ideas unless specifically
@@ -48,8 +55,12 @@
   when that separation is practical.
 - Documentation roles:
   - `AGENTS.md`: stable rules for working in this repository.
-  - `docs/current.md`: current approved state, active milestone, and backlog.
-  - `docs/codex-log.md`: historical decisions, experiments, and evidence.
+  - `docs/north-star.md`: stable product thesis, fun laws, and experience laws;
+    what COPY THAT? fundamentally is.
+  - `docs/current.md`: actual current implementation truth, deployment, active
+    milestone, and gaps; changes often.
+  - `docs/codex-log.md`: chronological history, experiments, rejected
+    directions, and evidence.
   - `docs/overtake-sim.md`: detailed overtake simulation evidence.
 
 ## Continuity and milestone review

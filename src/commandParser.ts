@@ -4,7 +4,7 @@ import type { AttackLane } from './overtakeModel.js';
  * Deliberately narrow radio-command recognition. This is command interpretation,
  * not a conversational agent: only one unambiguous driving call is accepted.
  */
-export type DriverCommand = AttackLane | 'now';
+export type DriverCommand = AttackLane | 'now' | 'push' | 'hold';
 
 export interface ParsedDriverCommand {
   command: DriverCommand | null;
@@ -43,6 +43,25 @@ const COMMAND_PHRASES: Readonly<Record<DriverCommand, readonly string[]>> = {
     '지금 가',
     '지금 공격',
     '지금 들어가',
+  ],
+  push: [
+    'push',
+    'push now',
+    'push this lap',
+    'full push',
+    'attack pace',
+    '푸시',
+    '밀어붙여',
+    '전력으로',
+  ],
+  hold: [
+    'hold',
+    'hold pace',
+    'maintain pace',
+    'stay on pace',
+    '유지',
+    '페이스 유지',
+    '그대로 가',
   ],
 };
 
