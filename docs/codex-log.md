@@ -1,5 +1,43 @@
 # Codex Log
 
+## 2026-08-28 - COPY THAT? 2.0 Phase 0 actual audit
+
+### Evidence, not assumption
+
+- Created safe pre-rebuild checkpoint `2b981b0` from the submitted vertical
+  slice before any architectural change.
+- Played the current local production build through complete and focused browser
+  paths and inspected the submitted public URL. NO INPUT finished normally in
+  P3 at 2:25.9; silence misses the objective but causes no incident or terminal
+  failure. This falsifies Engineer necessity in the current build.
+- Counted only three player calls across two decision sequences in a complete
+  run. The gap between the opening call and final overtake is nearly 100 seconds,
+  so the current race fails the no-empty-racing law.
+- Reproduced the protected overtake at runtime. Correct OUTSIDE + NOW succeeded
+  with defense-readable/intent/prep/NOW/outcome timestamps of
+  0.898/1.069/2.065/3.901/6.633 s. Wrong INSIDE + NOW produced a readable blocked
+  result, but safely aborted rather than creating a severe consequence.
+- Confirmed that UI copy exposes the rival's exact defense side, the rival is
+  seeded rather than position-reactive, PUSH/HOLD has no persistent race-state
+  tradeoff, the circuit has no meaningful blind crest, and the runtime does not
+  enforce legal corridor bounds.
+- Recorded the rejected placeholder-quality visual/audio findings and corrected
+  the stale ~2:06 race-duration claim. Build, command-parser, and overtake-model
+  tests remain useful regression evidence but are not treated as fun proof.
+
+### Decision
+
+- Keep `docs/north-star.md` and all release gates unchanged.
+- Preserve the approved pure overtake timing model while incrementally replacing
+  the surrounding race with a fixed-step deterministic simulation, explicit
+  information split, track-corridor assertions, and a dense sequence of causal
+  communication beats.
+- Do not deploy during the rebuild. Secure Realtime voice is feasible through a
+  same-origin server broker, but live voice and external asset generation are
+  deferred only at the exact unavailable-credential boundary.
+- Added an exact `RESUME HERE` section to `docs/current.md` so work can continue
+  from repository truth after any usage-limit interruption.
+
 ## 2026-08-27 - Stable North Star established
 
 - Established `docs/north-star.md` as the stable product and design constitution
