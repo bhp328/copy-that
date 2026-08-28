@@ -1,4 +1,6 @@
-import type { CoreOvertakeController } from './overtakeGameplay';
+interface OvertakeDebugSource {
+  createDebugReport(): string;
+}
 
 /** Developer-only diagnostics, mounted only when the URL contains ?debug=1. */
 export class OvertakeDebugPanel {
@@ -6,9 +8,9 @@ export class OvertakeDebugPanel {
 
   private readonly output: HTMLPreElement;
   private readonly copyButton: HTMLButtonElement;
-  private readonly gameplay: CoreOvertakeController;
+  private readonly gameplay: OvertakeDebugSource;
 
-  constructor(parent: HTMLElement, gameplay: CoreOvertakeController) {
+  constructor(parent: HTMLElement, gameplay: OvertakeDebugSource) {
     this.gameplay = gameplay;
     this.element = document.createElement('aside');
     this.element.className = 'debug-panel';

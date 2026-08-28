@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { FORMULA_CAR_ENVELOPE } from './vehicleSpec';
 
 export interface FormulaCarOptions {
   name: string;
@@ -169,7 +170,11 @@ export function createFormulaCar(options: FormulaCarOptions): FormulaCarModel {
   group.add(haloPillar);
 
   const frontWing = mesh(
-    new THREE.BoxGeometry(3.15, 0.1, 0.48),
+    new THREE.BoxGeometry(
+      FORMULA_CAR_ENVELOPE.frontWingWidthMetres,
+      0.1,
+      0.48,
+    ),
     carbonMaterial,
     0,
     0.39,
@@ -180,7 +185,7 @@ export function createFormulaCar(options: FormulaCarOptions): FormulaCarModel {
     const endplate = mesh(
       new THREE.BoxGeometry(0.08, 0.42, 0.6),
       accentMaterial,
-      side * 1.53,
+      side * (FORMULA_CAR_ENVELOPE.frontWingWidthMetres * 0.5 - 0.045),
       0.54,
       3.66,
     );

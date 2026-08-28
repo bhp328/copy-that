@@ -11,8 +11,17 @@
   },
   "include": [
     "src/overtakeModel.ts",
+    "src/overtakeSimulation.ts",
     "src/commandParser.ts",
+    "src/fixedStep.ts",
+    "src/vehicleSpec.ts",
+    "src/trackSpec.ts",
+    "src/trackGeometry.ts",
+    "src/trackValidation.ts",
     "scripts/sim-overtake.ts",
+    "scripts/sim-overtake-runtime.ts",
+    "scripts/sim-fixed-step.ts",
+    "scripts/sim-track.ts",
     "scripts/sim-commands.ts"
   ]
 }

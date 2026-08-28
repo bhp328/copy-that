@@ -1,16 +1,27 @@
 import * as THREE from 'three';
 import type { GameplayCorner } from './cornerGameplay';
+import {
+  createBarrierPlacements,
+  createTrackCurve,
+  getTrackFrame,
+} from './trackGeometry';
+import {
+  getTrackRoadWidthAt,
+  MERIDIAN_2_TRACK_SPEC,
+  wrapUnitProgress,
+} from './trackSpec';
 
 const WORLD_UP = new THREE.Vector3(0, 1, 0);
-const BASE_ROAD_WIDTH = 11.2;
-const TRACK_SEGMENTS = 720;
+const BASE_ROAD_WIDTH = MERIDIAN_2_TRACK_SPEC.baseRoadWidthMetres;
+const TRACK_SEGMENTS = MERIDIAN_2_TRACK_SPEC.roadSegments;
+const OVERTAKE_WIDTH_ZONE = MERIDIAN_2_TRACK_SPEC.widthZones[0];
 
 export const OVERTAKE_APPROACH_SPACE = Object.freeze({
-  widenStartProgress: 0.49,
-  fullWidthStartProgress: 0.525,
-  fullWidthEndProgress: 0.715,
-  narrowEndProgress: 0.76,
-  width: 14.4,
+  widenStartProgress: OVERTAKE_WIDTH_ZONE.widenStartProgress,
+  fullWidthStartProgress: OVERTAKE_WIDTH_ZONE.fullWidthStartProgress,
+  fullWidthEndProgress: OVERTAKE_WIDTH_ZONE.fullWidthEndProgress,
+  narrowEndProgress: OVERTAKE_WIDTH_ZONE.narrowEndProgress,
+  width: OVERTAKE_WIDTH_ZONE.widthMetres,
 });
 
 /** The approved overtake model resolves at the braking zone of Turn 8. */
@@ -69,38 +80,14 @@ export function createRaceTrack(): RaceTrack {
   const group = new THREE.Group();
   group.name = 'meridian-circuit';
 
-  const curve = new THREE.CatmullRomCurve3(
-    [
-      new THREE.Vector3(-220, 0.34, 140),
-      new THREE.Vector3(-92, 0.45, 145),
-      new THREE.Vector3(55, 0.38, 143),
-      new THREE.Vector3(202, 0.62, 133),
-      new THREE.Vector3(298, 0.5, 78),
-      new THREE.Vector3(326, 0.32, -18),
-      new THREE.Vector3(286, 0.52, -113),
-      new THREE.Vector3(192, 0.82, -158),
-      new THREE.Vector3(60, 0.66, -171),
-      new THREE.Vector3(-96, 0.42, -168),
-      new THREE.Vector3(-236, 0.34, -151),
-      new THREE.Vector3(-318, 0.48, -96),
-      new THREE.Vector3(-332, 0.72, -12),
-      new THREE.Vector3(-286, 0.84, 61),
-      new THREE.Vector3(-224, 0.58, 76),
-      new THREE.Vector3(-274, 0.42, 108),
-    ],
-    true,
-    'centripetal',
-    0.5,
-  );
-  curve.arcLengthDivisions = 3000;
-  curve.updateArcLengths();
+  const curve = createTrackCurve(MERIDIAN_2_TRACK_SPEC);
 
   group.add(createRoadRibbon(curve, getRoadWidthAt, TRACK_SEGMENTS));
   addRoadShoulders(group, curve, getRoadWidthAt, TRACK_SEGMENTS);
   addKerbs(group, curve, getRoadWidthAt, 280);
   addRacingReferences(group, curve, 150);
   addRunoffZones(group, curve);
-  addBarriers(group, curve, getRoadWidthAt, 156);
+  addBarriers(group, curve);
   addBrakingBoards(group, curve);
   const startLights = addStartFinishComplex(group, curve, BASE_ROAD_WIDTH);
   addSectorMarkers(group, curve);
@@ -122,26 +109,7 @@ export function createRaceTrack(): RaceTrack {
 }
 
 export function getRoadWidthAt(progress: number): number {
-  const wrapped = wrapProgress(progress);
-  const zone = OVERTAKE_APPROACH_SPACE;
-  if (wrapped < zone.widenStartProgress || wrapped >= zone.narrowEndProgress) {
-    return BASE_ROAD_WIDTH;
-  }
-  if (wrapped < zone.fullWidthStartProgress) {
-    const blend = THREE.MathUtils.smootherstep(
-      wrapped,
-      zone.widenStartProgress,
-      zone.fullWidthStartProgress,
-    );
-    return THREE.MathUtils.lerp(BASE_ROAD_WIDTH, zone.width, blend);
-  }
-  if (wrapped <= zone.fullWidthEndProgress) return zone.width;
-  const blend = THREE.MathUtils.smootherstep(
-    wrapped,
-    zone.fullWidthEndProgress,
-    zone.narrowEndProgress,
-  );
-  return THREE.MathUtils.lerp(zone.width, BASE_ROAD_WIDTH, blend);
+  return getTrackRoadWidthAt(progress, MERIDIAN_2_TRACK_SPEC);
 }
 
 export function placeTrackObject(
@@ -151,7 +119,7 @@ export function placeTrackObject(
   lateralOffset = 0,
   rideHeight = 0.08,
 ): void {
-  const progress = wrapProgress(totalProgress);
+  const progress = wrapUnitProgress(totalProgress);
   const point = curve.getPointAt(progress);
   const frame = getTrackFrame(curve, progress);
   object.position
@@ -165,7 +133,7 @@ export function getNextCircuitCorner(
   track: RaceTrack,
   totalProgress: number,
 ): { corner: CircuitCorner; distanceMetres: number } {
-  const progress = wrapProgress(totalProgress);
+  const progress = wrapUnitProgress(totalProgress);
   const corner =
     track.corners.find((candidate) => candidate.progress > progress) ??
     track.corners[0];
@@ -349,11 +317,14 @@ function addRunoffZones(group: THREE.Group, curve: THREE.CatmullRomCurve3): void
 function addBarriers(
   group: THREE.Group,
   curve: THREE.CatmullRomCurve3,
-  widthAt: (progress: number) => number,
-  count: number,
 ): void {
-  const segmentLength = curve.getLength() / count;
-  const geometry = new THREE.BoxGeometry(0.32, 1.12, segmentLength * 0.82);
+  const placements = createBarrierPlacements(curve, MERIDIAN_2_TRACK_SPEC);
+  const count = MERIDIAN_2_TRACK_SPEC.barrier.segments;
+  const geometry = new THREE.BoxGeometry(
+    MERIDIAN_2_TRACK_SPEC.barrier.thicknessMetres,
+    MERIDIAN_2_TRACK_SPEC.barrier.heightMetres,
+    1,
+  );
   const regular = new THREE.InstancedMesh(
     geometry,
     new THREE.MeshStandardMaterial({ color: 0x8b959d, roughness: 0.56, metalness: 0.54 }),
@@ -369,18 +340,13 @@ function addBarriers(
   const scale = new THREE.Vector3(1, 1, 1);
   let regularIndex = 0;
   let darkIndex = 0;
-  for (let index = 0; index < count; index += 1) {
-    const progress = (index + 0.5) / count;
-    const point = curve.getPointAt(progress);
-    const frame = getTrackFrame(curve, progress);
-    const distance = widthAt(progress) * 0.5 + 4.2;
-    for (const side of [-1, 1]) {
-      const position = point.clone().addScaledVector(frame.right, distance * side).addScaledVector(frame.up, 0.44);
-      matrix.compose(position, frame.quaternion, scale);
-      if (index % 7 <= 1) dark.setMatrixAt(darkIndex++, matrix);
-      else regular.setMatrixAt(regularIndex++, matrix);
-    }
-  }
+  placements.forEach((placement, placementIndex) => {
+    scale.set(1, 1, placement.depthMetres);
+    matrix.compose(placement.position, placement.quaternion, scale);
+    const segmentIndex = Math.floor(placementIndex / 2);
+    if (segmentIndex % 7 <= 1) dark.setMatrixAt(darkIndex++, matrix);
+    else regular.setMatrixAt(regularIndex++, matrix);
+  });
   while (regularIndex < count * 2) regular.setMatrixAt(regularIndex++, hidden);
   while (darkIndex < count * 2) dark.setMatrixAt(darkIndex++, hidden);
   regular.castShadow = true;
@@ -637,29 +603,4 @@ function createBoardTexture(label: string): THREE.CanvasTexture {
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = 4;
   return texture;
-}
-
-function getTrackFrame(
-  curve: THREE.CatmullRomCurve3,
-  progress: number,
-): {
-  tangent: THREE.Vector3;
-  right: THREE.Vector3;
-  up: THREE.Vector3;
-  quaternion: THREE.Quaternion;
-} {
-  const tangent = curve.getTangentAt(progress).normalize();
-  const right = new THREE.Vector3().crossVectors(WORLD_UP, tangent).normalize();
-  const up = new THREE.Vector3().crossVectors(tangent, right).normalize();
-  const basis = new THREE.Matrix4().makeBasis(right, up, tangent);
-  return {
-    tangent,
-    right,
-    up,
-    quaternion: new THREE.Quaternion().setFromRotationMatrix(basis),
-  };
-}
-
-function wrapProgress(progress: number): number {
-  return ((progress % 1) + 1) % 1;
 }

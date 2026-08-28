@@ -1,5 +1,52 @@
 # Codex Log
 
+## 2026-08-28 - Rebuild M1: deterministic authority and track safety
+
+### Implemented
+
+- Added the falsifiable COPY THAT? 2.0 encounter contract in
+  `docs/rebuild-2.0-design.md`: eight connected exchanges, explicit
+  Engineer/Driver views, persistent race state, canonical AFK/conservative/good/
+  wrong paths, opponent visible-position response, and release-test hypotheses.
+- Extracted a shared, serializable Meridian 2 track specification from Three.js
+  rendering. Re-authored the final complex after the first validator correctly
+  exposed a 2.30 m curvature radius, folded asphalt, barrier intrusion down to
+  -5.37 m, and panel gaps over 15 m. Those failed shapes were rejected rather
+  than hidden with omission zones or relaxed thresholds.
+- The accepted 1721.17 m track has 17.00 m elevation range, 18.39 m minimum
+  horizontal radius, 13.88 m non-local road gap, 4.18 m legal center half-width
+  for the actual 3.15 m car envelope, and a sight-line-occluding blind crest.
+- Replaced midpoint barrier boxes with 2880 endpoint-derived instanced panels.
+  Dense validation measures 3.79 m minimum clearance from every asphalt leg,
+  zero endpoint gap, and 1.85 m maximum chord.
+- Added a tested 60 Hz fixed-step clock between render frames and race updates.
+- Extracted protected overtake authority into a presentation-independent
+  `CoreOvertakeSimulation`; the Three.js adapter now only places the opponent
+  mesh from snapshots. Browser session seed creation remains outside authority.
+
+### Verification
+
+- `sim:fixed-step` passes equal 12 s traces under 30/60/120 FPS, a clamped 1 s
+  frame spike, and an irregular frame partition.
+- `sim:track` passes dense corridor, curvature, grade, crest rise/fall and visual
+  occlusion, self-clearance, global barrier intrusion, chord, and continuity
+  assertions.
+- `sim:overtake-runtime` passes viable success, too early, too late, blocked,
+  no-call, and deterministic Retry against the extracted simulation.
+- The original ten-case overtake matrix, 30/60/120 classifications, 23 EN/KR
+  command cases, and production build remain green.
+- Production-browser QA shows the new track and a successful OUTSIDE + NOW P2
+  path with no inspected console warnings/errors. Placeholder art/UI quality is
+  still explicitly rejected and was not treated as a release gate pass.
+
+### Next decision boundary
+
+- Build one pure race-level action/event state machine and the first three
+  connected exchanges before incident, feint, voice, or visual polish work.
+- Static track safety now passes; runtime containment must still be asserted for
+  every vehicle/tick across outcome traces.
+- No deployment was performed.
+
 ## 2026-08-28 - COPY THAT? 2.0 Phase 0 actual audit
 
 ### Evidence, not assumption

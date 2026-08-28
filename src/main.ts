@@ -2,11 +2,13 @@ import * as THREE from 'three';
 import { CarController } from './carController';
 import type { DriverCommand } from './commandParser';
 import { OvertakeDebugPanel } from './debugPanel';
+import { FixedStepClock } from './fixedStep';
 import { createFormulaCar } from './formulaCar';
+import { OvertakePresentation } from './overtakeGameplay';
 import {
-  CoreOvertakeController,
+  CoreOvertakeSimulation,
   type DefenseSelectionMode,
-} from './overtakeGameplay';
+} from './overtakeSimulation';
 import { RaceAudio } from './raceAudio';
 import { RaceEngineerUI } from './raceEngineerUI';
 import {
@@ -57,19 +59,16 @@ const forcedDefense: DefenseSelectionMode =
 const seedParameter = queryParameters.get('seed');
 const requestedSeed = seedParameter === null ? Number.NaN : Number(seedParameter);
 
-const overtake = new CoreOvertakeController(
-  track.curve,
-  track.length,
-  track.gameplayCorner,
-  {
-    defenseMode: forcedDefense,
-    seed: Number.isFinite(requestedSeed) ? requestedSeed : undefined,
-    startTotalProgress: SPRINT_OVERTAKE_START_TOTAL_PROGRESS,
-    repeatAddsLap: false,
-  },
-);
-overtake.opponent.visible = false;
-scene.add(overtake.opponent);
+const overtake = new CoreOvertakeSimulation(track.length, {
+  defenseMode: forcedDefense,
+  seed: Number.isFinite(requestedSeed) ? requestedSeed : createSessionSeed(),
+  startTotalProgress: SPRINT_OVERTAKE_START_TOTAL_PROGRESS,
+  repeatAddsLap: false,
+});
+const overtakePresentation = new OvertakePresentation(track.curve);
+overtakePresentation.sync(overtake.snapshot);
+overtakePresentation.opponent.visible = false;
+scene.add(overtakePresentation.opponent);
 
 const fieldRival = createFormulaCar({
   name: 'target-p2',
@@ -88,6 +87,8 @@ scene.add(fieldRival, raceLeader);
 const session = new SprintRaceSession(track.length, overtake);
 const debugStage = queryParameters.get('stage');
 const initial = session.snapshot;
+const simulationClock = new FixedStepClock();
+let latestSnapshot = initial;
 const car = new CarController(track.curve, 'normal', initial.playerTotalProgress);
 car.setSimulationState(initial.playerTotalProgress, initial.playerSpeedKmh);
 scene.add(car.object);
@@ -102,19 +103,23 @@ const ui = new RaceEngineerUI({
   mapPoints: track.mapPoints,
   onStart: () => {
     void audio.start();
+    simulationClock.reset();
     if (debugEnabled && (debugStage === 'pace' || debugStage === 'overtake')) {
       session.debugJumpTo(debugStage);
     } else {
       session.start();
     }
-    renderInterface(session.snapshot);
+    latestSnapshot = session.snapshot;
+    renderInterface(latestSnapshot);
   },
   onRetry: () => {
     session.restart();
     session.start();
-    lastRadioSequence = session.snapshot.radioSequence;
+    simulationClock.reset();
+    latestSnapshot = session.snapshot;
+    lastRadioSequence = latestSnapshot.radioSequence;
     lastOutcome = 'pending';
-    syncRaceView(session.snapshot, true);
+    syncRaceView(latestSnapshot, true);
   },
   onCommand: handleCommand,
   onAudioToggle: () => audio.toggleMuted(),
@@ -188,7 +193,8 @@ function syncRaceView(snapshot: SprintRaceSnapshot, snapCamera = false): void {
     snapshot.phase === 'overtake' ||
     snapshot.phase === 'runout' ||
     snapshot.phase === 'finished';
-  overtake.opponent.visible = coreVisible;
+  overtakePresentation.opponent.visible = coreVisible;
+  overtakePresentation.sync(snapshot.core);
   fieldRival.visible = !coreVisible;
   if (!coreVisible) {
     placeTrackObject(fieldRival, track.curve, snapshot.rivalTotalProgress);
@@ -251,7 +257,10 @@ renderer.setAnimationLoop(() => {
   const deltaSeconds = Math.min((currentFrameTime - previousFrameTime) / 1_000, 0.1);
   previousFrameTime = currentFrameTime;
 
-  const snapshot = session.update(deltaSeconds);
+  simulationClock.advance(deltaSeconds, (fixedDeltaSeconds) => {
+    latestSnapshot = session.update(fixedDeltaSeconds);
+  });
+  const snapshot = latestSnapshot;
   car.setSimulationState(
     snapshot.playerTotalProgress,
     snapshot.playerSpeedKmh,
@@ -262,7 +271,8 @@ renderer.setAnimationLoop(() => {
     snapshot.phase === 'overtake' ||
     snapshot.phase === 'runout' ||
     snapshot.phase === 'finished';
-  overtake.opponent.visible = coreVisible;
+  overtakePresentation.opponent.visible = coreVisible;
+  overtakePresentation.sync(snapshot.core);
   fieldRival.visible = !coreVisible;
   if (!coreVisible) placeTrackObject(fieldRival, track.curve, snapshot.rivalTotalProgress);
   placeTrackObject(raceLeader, track.curve, snapshot.leaderTotalProgress);
@@ -290,3 +300,9 @@ renderer.setAnimationLoop(() => {
 
   renderer.render(scene, camera);
 });
+
+function createSessionSeed(): number {
+  const values = new Uint32Array(1);
+  crypto.getRandomValues(values);
+  return values[0];
+}

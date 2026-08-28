@@ -18,6 +18,7 @@ gates, and the exact continuation point for the COPY THAT? 2.0 rebuild.
 
 - Branch: `master`.
 - Safe pre-rebuild baseline: `2b981b0 Checkpoint submitted vertical slice baseline`.
+- Phase 0 evidence checkpoint: `acb5019 Document Phase 0 rebuild audit`.
 - That checkpoint contains the complete previously submitted Meridian Sprint
   and the authoritative North Star documentation.
 - The submitted public URL is
@@ -36,6 +37,37 @@ gates, and the exact continuation point for the COPY THAT? 2.0 rebuild.
 - Deterministic EN/KR command parsing and one shared command path for text,
   buttons, and future voice intents.
 - Debug-only seeded stage jumps and timestamp evidence.
+
+## Rebuild Milestone 1 — Implemented And Locally Verified
+
+- Added `docs/rebuild-2.0-design.md`, the falsifiable 3–5 minute encounter and
+  information-split contract. It is subordinate to the North Star and its
+  untested values are hypotheses, not approved balance.
+- Added a shared serializable track specification and separated CatmullRom/frame
+  math, validation, and Three.js rendering responsibilities.
+- Re-authored the circuit to 1721.17 m with a measured 17.00 m elevation range
+  and a genuine crest profile. The crest rises 11.30 m, falls 9.58 m, and
+  occludes the approach-to-reveal sight line by 9.24 m.
+- Track validation now uses the actual 3.15 m-wide Formula-car envelope, dense
+  0.25 m samples, an 18 m minimum curvature requirement, legal center bounds,
+  non-local road clearance, global barrier-to-asphalt clearance, and transformed
+  barrier chord/endpoint continuity checks.
+- The current track passes with 18.39 m minimum radius, 4.18 m minimum legal
+  center half-width, 13.88 m minimum non-local road gap, 3.79 m minimum barrier
+  clearance, 2880 continuous instanced panels, zero measured endpoint gap, and
+  1.85 m maximum panel chord.
+- Added a 60 Hz fixed-step clock between browser frame time and simulation. It
+  produces the same 720 authority ticks over 12 seconds under 30/60/120 FPS
+  schedules and clamps a 1 s spike to six 60 Hz ticks.
+- Extracted the protected overtake authority into `CoreOvertakeSimulation`, a
+  module with no Three.js, DOM, browser clock, or random-source dependency.
+  `OvertakePresentation` now only maps snapshots to the rival mesh.
+- Direct runtime characterization passes success, too early, too late, blocked,
+  no-call, and deterministic Retry. The original lower-model matrix and timing
+  interval are unchanged.
+- Browser QA on the production build confirmed the re-authored track renders,
+  the pure-simulation OUTSIDE + NOW path reaches P2, and inspected paths have no
+  console warnings or errors. This is regression evidence, not a Fun Gate.
 
 ## Phase 0 Actual Audit — 2026-08-28
 
@@ -85,7 +117,7 @@ smoke-test success alone.
   replaces the opening race pace. The full race does not yet have one unified,
   fixed-step deterministic state machine.
 
-### Track, camera, vehicle, UI, and audio findings
+### Track, camera, vehicle, UI, and audio findings at the audited baseline
 
 - The 1744.456 m circuit is visually coherent enough for a prototype but has
   only about 0.52 m of elevation, so it cannot deliver a genuine blind crest.
@@ -117,8 +149,15 @@ smoke-test success alone.
 ## Verification Baseline
 
 - `npm run test:commands`: 23 English/Korean recognition and rejection cases pass.
+- `npm run sim:fixed-step`: 30/60/120 partitions, frame spike, and irregular
+  partition checks pass.
+- `npm run sim:track`: corridor, curvature, elevation/crest occlusion,
+  self-clearance, barrier intrusion, panel continuity, and vehicle-envelope
+  assertions pass.
 - `npm run sim:overtake`: required ten-case matrix plus 30/60/120 FPS
   classifications pass with the approved timing unchanged.
+- `npm run sim:overtake-runtime`: success, early, late, blocked, no-call, and
+  deterministic Retry cases pass against the extracted runtime simulation.
 - `npm run build`: production build passes. Vite reports the existing
   non-blocking Three.js chunk-size advisory (about 605 kB JS before gzip).
 - These checks protect deterministic behavior; they do not claim that the game
@@ -144,11 +183,12 @@ smoke-test success alone.
 
 **COPY THAT? 2.0 — deterministic core and information architecture rebuild.**
 
-The next stable milestone is not a visual reskin. It is a pure, fixed-step race
-simulation with an explicit Engineer/Driver information split, legal track
-corridor assertions, persistent race state, and 5–8 causally meaningful
-communication beats. The protected overtake model remains characterized while
-the surrounding race is replaced incrementally.
+The track, fixed-step clock, and protected pure overtake boundary are complete.
+The next milestone is one pure `RaceSimulation` action/event queue with separate
+Engineer and Driver views, persistent car state, runtime lateral containment,
+and the first three causal exchanges: Driver feel/pace, blind crest, and rival
+attack/defence. The old long-empty race remains visible until that replacement
+slice is browser-proven.
 
 ## Current Release-gate Status
 
@@ -157,7 +197,9 @@ the surrounding race is replaced incrementally.
 - **Fail:** UI reveals an explicit tactical answer.
 - **Fail:** rival does not react to visible Driver positioning.
 - **Fail:** failure severity lacks contact/spin/DNF and persistent consequence.
-- **Fail:** track containment and barrier intrusion are not asserted.
+- **Partial pass:** static legal corridor, curvature, crest, non-local road, and
+  barrier intrusion/continuity are asserted. Full deterministic race traces do
+  not yet assert every vehicle's lateral containment on every tick.
 - **Fail:** cockpit/car/track/UI/audio remain placeholder-quality.
 - **Blocked on later credential only:** live Realtime voice measurement.
 - **Pass as baseline only:** build, command parsing, protected overtake model,
@@ -166,20 +208,28 @@ the surrounding race is replaced incrementally.
 ## RESUME HERE
 
 1. Confirm `git status --short --branch` and this file before changing code.
-2. Preserve `src/overtakeModel.ts` behavior with characterization tests.
-3. Extract pure track/race specifications from rendering concerns and add a
-   deterministic legal-corridor/barrier-clearance validator runnable from npm.
-4. Introduce one fixed-step, presentation-independent race simulation boundary.
-5. Add the first dense communication slice (blind crest + Driver grip report +
-   Engineer pace/risk judgment) and falsify it before expanding the event set.
-6. Update this section and `docs/codex-log.md`, run the relevant simulations,
-   build, and browser evidence pass, then create the next Git checkpoint.
+2. Read `docs/rebuild-2.0-design.md`; do not redesign the completed track or
+   protected overtake boundary without new failing evidence.
+3. Add a pure 60 Hz `RaceSimulation` with FIFO intent receipts, sequenced events,
+   persistent grip/heat/stability/damage/gap state, and immutable snapshots.
+4. Derive compile-time-separated Engineer and Driver views and assert that each
+   omits the other role's privileged information.
+5. Implement and sweep the first three exchanges: proactive Driver feel →
+   pace/risk, blind-crest braking margin, and rival attack/defence. Add runtime
+   legal/outer corridor assertions for every vehicle and every tick.
+6. Prove AFK, conservative, good, wrong, and timing-shift traces for this slice;
+   then integrate it into the browser before adding the incident and feint.
+7. Update this section and `docs/codex-log.md`, run the simulations below, build,
+   capture browser evidence, and create the next Git checkpoint.
 
 Baseline commands:
 
 ```text
 npm run test:commands
+npm run sim:fixed-step
+npm run sim:track
 npm run sim:overtake
+npm run sim:overtake-runtime
 npm run build
 npm run preview -- --host 127.0.0.1
 ```

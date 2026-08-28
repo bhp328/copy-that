@@ -1,5 +1,8 @@
 import type { DriverCommand } from './commandParser';
-import type { CoreOvertakeSnapshot, DriverMessageKey } from './overtakeGameplay';
+import type {
+  CoreOvertakeSnapshot,
+  DriverMessageKey,
+} from './overtakeSimulation';
 import {
   kmhToMetresPerSecond,
   metresPerSecondToKmh,
