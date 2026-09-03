@@ -1,5 +1,108 @@
 # Codex Log
 
+## 2026-09-03 - Steam audit checkpoint and human-test protocol freeze
+
+- This docs-only checkpoint captures the previously uncommitted Steam-first
+  audit, current-truth update, and the new `docs/human-test-protocol.md`.
+- The existing Web M2 is now explicitly a core-thesis falsification oracle, not
+  release QA. Steam PC remains the primary product target; Web remains a
+  temporary oracle, and the production engine remains unfrozen.
+- The protocol freezes six first-time players with two no-hint runs each plus
+  three separate 10-second-clip observers. Behavior and causal understanding
+  outrank satisfaction survey answers.
+- `PASS` requires 4/6 for Engineer necessity, Run-2 mastery, spontaneous Retry,
+  and causal failure attribution, plus 2/3 for clip causality. `FAIL` requires
+  revision in the existing harness before engine work; `INCONCLUSIVE` permits
+  only the documented minimum retest.
+- Presentation/audio/vehicle-feel false negatives must be diagnosed separately
+  from core-thesis failure without relaxing the frozen scores.
+- Only `PASS` advances to engine-neutral contracts/golden traces, then equal
+  Godot C# versus Unity C# Windows spikes, winner selection, and **FREEZE AND
+  BUILD**.
+- No game code, rendering, balance, engine spike, dependency, deployment, or
+  North Star change was made. Executable tests were not rerun; the prior
+  2026-09-03 green baseline remains the latest test evidence. Verification for
+  this checkpoint is document consistency, reviewed diff, and
+  `git diff --check`.
+
+## 2026-09-03 - Steam-first Zero-Based Product/Tech Audit
+
+### Scope and repo truth
+
+- Audited only; no gameplay, renderer, audio, asset, voice, networking, engine,
+  dependency, or refactor implementation was changed.
+- Read AGENTS.md, north-star.md, current.md, this log, rebuild-2.0-design.md,
+  overtake-sim.md, Git status/log/diff, checkpoint 5a98f95, and the actual
+  simulation, track, adapter, browser, audio, and legacy-session boundaries.
+- The repository was clean at audit start. HEAD and origin/master both resolved
+  to 5a98f952a4a5392697a792a1408d6ca38e7e308e.
+- The prior 2026-09-03 command re-verification remains the latest executable
+  evidence. No new browser full run, screenshot, console, voice, Fun Gate, or
+  release evidence was created.
+
+### Product and architecture decisions
+
+- Recorded the complete decision preparation in
+  `docs/steam-zero-based-audit.md`.
+- **DO NOT FREEZE YET:** Steam PC is the primary product target, while the
+  production engine and voice providers remain unfrozen.
+- Web is no longer a shipping constraint. Keep the current Three.js/Vite M2
+  slice temporarily as the cheapest behavioral oracle and one narrow human/fun
+  test surface; skip broad web release QA, hosting, responsive matrices, and
+  production WebRTC work.
+- Preserve M2's behavioral assets: 60 Hz deterministic authority, FIFO actions,
+  immutable role views, persistent condition, corridor/containment rules,
+  reason codes, Moment events, and protected overtake timing evidence.
+- Treat TypeScript source reuse separately from behavioral reuse. A native C#
+  production path requires engine-neutral schemas and golden traces before a
+  port. Three-specific geometry, browser adapters, DOM UI, WebAudio, and legacy
+  race-session structure do not receive preservation status merely because they
+  exist.
+- Shortlisted Godot C# and Unity C# for an equal packaged Windows spike after
+  the human gate. Three.js is the low-migration control. Unreal was screened out
+  at current scope because its ceiling does not repay solo-dev/migration/AAA
+  scope risk without new evidence.
+- Wheel/FFB was deliberately given low current weight: the solo player is the
+  Engineer. It becomes a real engine criterion only with Human Driver duo.
+
+### Voice, product, and operations decisions
+
+- Kept AI-provider agnostic + AI-optional core + Hybrid Driver as the safe
+  architecture, not as proven fun. Critical/common radio must remain local and
+  deterministic; clarification/personality/banter/memory may use a selectable,
+  cancellable generator.
+- OpenAI, Gemini, Groq, Qwen, MiniMax, whisper.cpp, llama.cpp, local TTS, and
+  prerecorded paths were screened as replaceable candidates. No provider may
+  mutate simulation outside the constrained action boundary, and BYO API key is
+  rejected as the default Steam UX.
+- Proposed one shared EN/KR/noise/negative command corpus with exact PTT,
+  transcript, intent, apply, acknowledgement, error, fallback, and cost
+  timestamps. Zero wrong critical mutations is the hard safety gate.
+- Deferred backend, Steam lobbies/relay, Contracts/Hardcore, replay editor,
+  creator tooling, duo, and wheel/FFB until the connected solo run passes.
+  Semantic Moment events and deterministic traces are kept now because they
+  are cheap and can later feed Steam Timeline/replay.
+- Current Steam Direct fee, Unity/Godot licensing, Steam integration/binding,
+  mic/input/networking, provider pricing/capabilities, local inference, crash
+  reporting, and GitHub Student Pack claims were checked against first-party
+  documentation linked in the audit.
+- No engine executable was found on PATH or in the checked common Godot/Unity
+  install locations. No engine or plugin was installed.
+
+### Next decision boundary
+
+1. Run the audit's six-player, two-run existing-web test covering start → feel
+   → crest → defence → consequence → retry, with spoken Wizard-of-Oz mapping
+   clearly labeled, plus three blind 10-second-clip observers.
+2. If comprehension/retry evidence fails, revise the interaction in the current
+   harness before porting.
+3. If it passes, checkpoint neutral schemas/golden traces and run the equal
+   Godot C# versus Unity C# spike.
+4. Freeze and build only after a candidate passes deterministic, packaged,
+   audio/mic, iteration, and presentation hard gates.
+
+- No commit, push, or deployment was performed in this audit pass.
+
 ## 2026-08-28 - Rebuild M2: deterministic first-three encounter slice
 
 ### Implemented

@@ -21,17 +21,24 @@ gates, and the exact continuation point for the COPY THAT? 2.0 rebuild.
   tracks `origin/master`.
 - Safe pre-rebuild baseline: `2b981b0 Checkpoint submitted vertical slice baseline`.
 - Phase 0 evidence checkpoint: `acb5019 Document Phase 0 rebuild audit`.
+- Focused M2 checkpoint: `5a98f95 Checkpoint deterministic M2 encounter slice`.
 - That checkpoint contains the complete previously submitted Meridian Sprint
   and the authoritative North Star documentation.
+- **Steam PC is now the primary product target.** Web is retained only for
+  validation, discovery, and a possible later demo. The production engine is
+  deliberately unfrozen pending the human-fun and native-spike gates in
+  `docs/steam-zero-based-audit.md` and `docs/human-test-protocol.md`.
 - The submitted public URL is
   `https://lambent-gecko-2ec95c.netlify.app/` and must be preserved when a later
-  release candidate is intentionally deployed.
+  web demo candidate is intentionally deployed. It is no longer the product
+  release target.
 - Deployment is deliberately paused until the rebuilt core passes the North
   Star release gates locally.
 
 ## Existing Baseline — What Is Worth Preserving
 
-- Three.js + TypeScript + Vite, browser-first and English/Korean capable.
+- Three.js + TypeScript + Vite as the current English/Korean-capable validation
+  harness. It is not a frozen Steam production-engine choice.
 - A deterministic spline-driving race shell with a complete start, three laps,
   result, and Retry loop.
 - The approved pure overtake model and its measured 3.75–4.70 s NOW interval.
@@ -204,29 +211,52 @@ smoke-test success alone.
 
 ## Voice / Realtime Feasibility
 
-- A secure browser WebRTC path is technically viable: a same-origin server
-  broker creates the Realtime session/call with a server-only OpenAI key, while
-  the browser receives no long-lived secret.
+- The product voice boundary is provider-agnostic and AI-optional. OpenAI,
+  Gemini, Groq, Qwen, MiniMax, local STT/LLM/TTS, and prerecorded combinations
+  must compete against the same EN/KR command, latency, cost, privacy, and
+  fallback evidence.
+- Critical/common radio must have a local deterministic acknowledgement and
+  text/icon fallback. No cloud provider may gate a race-critical action.
 - Natural language should resolve only to constrained deterministic race-call
   tools and route through the same simulation command boundary as fallback text.
 - Required latency timestamps are: PTT down/up, audio commit, transcript,
   intent/tool arguments, simulation apply, acknowledgement start, and audio end.
 - The current 0.95 s NOW window is **not voice-proven**. It must be measured with
   real speech before being accepted or retuned.
-- No OpenAI, Tripo, Gemini, or ElevenLabs API key is available in the current
-  process. Secure scaffolding and deterministic mock testing can continue; live
-  Realtime and external generated-asset proof will stop only at that minimal
-  credential boundary.
+- BYO API key is not an acceptable default Steam UX. Any later cloud option
+  needs a developer-owned thin broker, quotas, short-lived client authorization
+  where supported, and a complete offline fallback.
+
+## Steam-first Zero-Based Audit — 2026-09-03
+
+- The full audit is recorded in `docs/steam-zero-based-audit.md`.
+- Decision: **DO NOT FREEZE YET**. Steam PC is frozen as the primary product
+  target; the production engine and voice providers are not.
+- Keep the current web M2 slice only for the falsification gate frozen in
+  `docs/human-test-protocol.md`. Do not spend this gate on web hosting,
+  responsive matrices, production WebRTC, or browser presentation polish.
+- Only a protocol `PASS` permits engine-neutral M2 schemas/golden traces and an
+  equal Godot C# versus Unity C# packaged native spike.
+  Three.js remains the low-migration control. Unreal is screened out at the
+  current scope.
+- Preserve behavior, information split, fixed-step semantics, persistent state,
+  overtake timing evidence, reason codes, and Moment events. Do not preserve
+  browser adapters, legacy session structure, DOM UI, or WebAudio merely because
+  they already exist.
+- No game implementation, refactor, engine installation, plugin installation,
+  deployment, or production-port work was performed in the audit pass.
 
 ## Active Milestone
 
-**COPY THAT? 2.0 — deterministic core and information architecture rebuild.**
+**Steam-first decision gate — prove the interaction before freezing the native
+production stack.**
 
-The track, fixed-step clock, protected pure overtake boundary, and first three-
-beat pure RaceSimulation slice are complete. The next milestone is to browser-
-prove this slice end to end, then extend the same authority with the unseen
-incident, visible-position feint/switch, protected NOW commitment, and final
-defence. The full run remains incomplete until those beats are connected.
+The track, fixed-step clock, protected overtake boundary, and first three-beat
+RaceSimulation slice remain the protected M2 evidence baseline. The immediate
+milestone is the deliberately narrow blind test frozen in
+`docs/human-test-protocol.md`. Only `PASS` advances to engine-neutral fixtures
+and the equal Godot/Unity native spike. The full 3–5 minute run is still
+incomplete.
 
 ## Current Release-gate Status
 
@@ -248,26 +278,30 @@ defence. The full run remains incomplete until those beats are connected.
 
 ## RESUME HERE
 
-1. Confirm `git status --short --branch` and this file before changing code.
-2. Preserve the focused M2 checkpoint: `RaceSimulation`, the role-specific
-   information split, persistent condition state, runtime containment, and the
-   first three connected exchanges are implemented and simulator-verified.
-   Do not treat that checkpoint as browser, Fun Gate, voice, or release proof.
-3. Read `docs/rebuild-2.0-design.md`; do not redesign the completed track or
-   protected overtake boundary without new failing evidence.
-4. Re-run the local browser full slice and capture start, calm/feel, blind crest,
-   defence, consequence, and retry screenshots plus console state. Browser
-   permission was denied in the interrupted session, so do not mark this gate
-   complete from the simulator alone.
-5. Connect the unseen incident with race-control hazard evidence, causal
-   lift/route choices, and a normal-seed AFK DNF path; then add visible-position
-   feint/switch and feed its cover into the protected NOW model.
-6. Add final defence, full 3–5 minute start→pressure→climax→finish/DNF→retry
-   traces, and run the A–I EN/KR desktop/small-viewport playtest matrix.
-7. Add secure PTT/realtime scaffolding and latency timestamps; stop only at the
-   exact missing project-scoped credential for live audio.
-8. Update this section/log, run relevant simulations/build/browser evidence, and
-   create the next checkpoint. Do not deploy.
+1. Start from the docs-only Steam audit and human-test-protocol checkpoint.
+   Confirm `git status --short --branch`, then read
+   `docs/steam-zero-based-audit.md` and `docs/human-test-protocol.md`. Preserve
+   checkpoint `5a98f95` behavior and do not change code for test setup.
+2. Execute only the frozen existing-web protocol: six first-time players, two
+   runs each, plus three separate 10-second-clip observers. Explain only the
+   goal and controls; record behavior and causal understanding without hints.
+   Do not substitute broad browser QA, secure WebRTC work, deployment, or a
+   satisfaction survey for this gate.
+3. Score `PASS`, `FAIL`, or `INCONCLUSIVE`: A–D each require at least 4/6 and
+   the clip gate requires at least 2/3. `FAIL` requires revision in the existing
+   harness before any engine transition. `INCONCLUSIVE` permits only the
+   protocol's documented minimum retest.
+4. Only after `PASS`, freeze versioned engine-neutral action/view/event/reason
+   schemas and golden traces for AFK, conservative, good, wrong, timing-shift,
+   retry, and 30/60/120 partitions. Checkpoint that contract before porting.
+5. Run equal Godot C# and Unity C# Windows spikes against the same contract,
+   seed, greybox, audio/mic scope, deterministic hashes, packaging requirement,
+   and measured iteration cycle. Keep Three.js as the control.
+6. Select the winner only from the spike's hard-gate evidence, then **FREEZE AND
+   BUILD** one connected vertical run by parity before deleting the web adapter
+   or legacy session.
+7. Update this section and the log with exact human, trace, build, latency, and
+   diff evidence; create the next clean checkpoint. Do not deploy.
 
 Baseline commands:
 
@@ -282,6 +316,10 @@ npm run build
 npm run preview -- --host 127.0.0.1
 ```
 
-Do not deploy. Do not weaken `docs/north-star.md`. Do not start visual polish or
-live voice integration until the authoritative simulation and information split
-can support them without hiding gameplay flaws.
+These remain the latest green implementation baseline. They were not rerun for
+the docs-only audit/protocol checkpoint; run only checks required by a later
+implementation diff.
+
+Do not deploy. Do not weaken `docs/north-star.md`. Do not install or choose an
+engine, begin a production port, start visual polish, or integrate production
+voice until the audit gates justify it.
