@@ -133,6 +133,11 @@ export const UI_TEXT = {
         now: 'TRANSMITTED: NOW',
         push: 'TRANSMITTED: PUSH',
         hold: 'TRANSMITTED: HOLD',
+        save: 'TRANSMITTED: SAVE',
+        early: 'TRANSMITTED: EARLY BRAKE',
+        normal: 'TRANSMITTED: NORMAL BRAKE',
+        late: 'TRANSMITTED: LATE BRAKE',
+        yield: 'TRANSMITTED: YIELD',
       },
     },
     driverMessage: {
@@ -232,6 +237,11 @@ export const UI_TEXT = {
         now: '전송됨: 지금',
         push: '전송됨: 푸시',
         hold: '전송됨: 유지',
+        save: '전송됨: 세이브',
+        early: '전송됨: 일찍 제동',
+        normal: '전송됨: 정상 제동',
+        late: '전송됨: 늦게 제동',
+        yield: '전송됨: 양보',
       },
     },
     driverMessage: {

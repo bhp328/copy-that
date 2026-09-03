@@ -71,6 +71,43 @@ gates, and the exact continuation point for the COPY THAT? 2.0 rebuild.
   the pure-simulation OUTSIDE + NOW path reaches P2, and inspected paths have no
   console warnings or errors. This is regression evidence, not a Fun Gate.
 
+## Rebuild Milestone 2 — Pure first-three encounter slice
+
+- Added `RaceSimulation`, a Three.js/DOM-independent 60 Hz authority with a
+  FIFO action queue, monotonic action/event receipts, retry cancellation, and
+  immutable Engineer, Driver, Presentation, and diagnostics projections.
+- The Engineer projection exposes upcoming geometry, gap/closing evidence and
+  road remaining while omitting exact grip, brake feel, visibility, and local
+  overlap. The Driver projection exposes those NOW/FEEL facts while omitting
+  unseen geometry and global rival trend. Runtime probes assert the forbidden
+  keys are absent and the projections are frozen.
+- Added `raceCorridor.ts`; both player and rival are checked every simulation
+  tick against legal asphalt and outer runoff envelopes. The first-slice traces
+  complete with zero containment clamps.
+- Implemented the first three connected exchanges: proactive Driver feel →
+  PUSH/HOLD/SAVE persistence, a route-positioned blind-crest brake margin with
+  emergency save/compromised/spin consequences, and a rival attack/defence
+  exchange where cover follows the Driver's visible line. Wrong depleted
+  defence can become contact/DNF; conservative yield is safe but loses P2.
+- The browser now defaults to this authority through a transitional adapter and
+  exposes pace, crest-brake, and defence calls plus EN/KR text fallback.
+  `?legacy=1` remains a developer regression path for the old protected-
+  overtake presentation; it is not the rebuild's normal player path.
+
+### Milestone 2 verification
+
+- `npm run sim:race` passes AFK emergency save + automatic yield, conservative
+  safe miss, good clean crest + held P2, wrong late/spin + depleted-side
+  contact/DNF, timing-shift consequence, 30/60/120 render partitions,
+  immutable role-view omissions, and FIFO duplicate rejection.
+- `npm run test:commands` remains green with the original 23 cases; the parser
+  also accepts SAVE/EARLY/NORMAL/LATE/YIELD fallback vocabulary.
+- `npm run build` passes after the browser adapter and expanded command deck.
+- Local Browser automation was attempted against the production preview, but
+  the in-app Browser auto-review denied localhost access in this session. No
+  screenshot or console-clean claim is made for this milestone; browser
+  full-run evidence remains an explicit next gate.
+
 ## Phase 0 Actual Audit — 2026-08-28
 
 This is based on full browser runs and focused runtime probes, not on build or
@@ -185,23 +222,25 @@ smoke-test success alone.
 
 **COPY THAT? 2.0 — deterministic core and information architecture rebuild.**
 
-The track, fixed-step clock, and protected pure overtake boundary are complete.
-The next milestone is one pure `RaceSimulation` action/event queue with separate
-Engineer and Driver views, persistent car state, runtime lateral containment,
-and the first three causal exchanges: Driver feel/pace, blind crest, and rival
-attack/defence. The old long-empty race remains visible until that replacement
-slice is browser-proven.
+The track, fixed-step clock, protected pure overtake boundary, and first three-
+beat pure RaceSimulation slice are complete. The next milestone is to browser-
+prove this slice end to end, then extend the same authority with the unseen
+incident, visible-position feint/switch, protected NOW commitment, and final
+defence. The full run remains incomplete until those beats are connected.
 
 ## Current Release-gate Status
 
 - **Fail:** AFK/silence does not prevent a normal finish.
-- **Fail:** only two communication sequences; long empty racing remains.
-- **Fail:** UI reveals an explicit tactical answer.
-- **Fail:** rival does not react to visible Driver positioning.
-- **Fail:** failure severity lacks contact/spin/DNF and persistent consequence.
-- **Partial pass:** static legal corridor, curvature, crest, non-local road, and
-  barrier intrusion/continuity are asserted. Full deterministic race traces do
-  not yet assert every vehicle's lateral containment on every tick.
+- **Partial:** the first three-beat slice has several causal exchanges, but the
+  full run still has the old sparse long-race shape after the slice.
+- **Partial:** default rebuild UI presents evidence-only crest/defence cues; the
+  `?legacy=1` developer path retains the old explicit overtake wording.
+- **Partial pass:** the first-slice rival reacts to visible Driver line, but the
+  later feint/switch and protected NOW opponent loop are not connected yet.
+- **Partial pass:** first-slice contact/spin/DNF and persistent condition are
+  causal; unseen-incident and final-defence failure families remain.
+- **Partial pass:** static corridor and first-slice per-tick traces pass with
+  zero clamps. Full deterministic race traces still do not exist.
 - **Fail:** cockpit/car/track/UI/audio remain placeholder-quality.
 - **Blocked on later credential only:** live Realtime voice measurement.
 - **Pass as baseline only:** build, command parsing, protected overtake model,
@@ -210,19 +249,25 @@ slice is browser-proven.
 ## RESUME HERE
 
 1. Confirm `git status --short --branch` and this file before changing code.
-2. Read `docs/rebuild-2.0-design.md`; do not redesign the completed track or
+2. Preserve the focused M2 checkpoint: `RaceSimulation`, the role-specific
+   information split, persistent condition state, runtime containment, and the
+   first three connected exchanges are implemented and simulator-verified.
+   Do not treat that checkpoint as browser, Fun Gate, voice, or release proof.
+3. Read `docs/rebuild-2.0-design.md`; do not redesign the completed track or
    protected overtake boundary without new failing evidence.
-3. Add a pure 60 Hz `RaceSimulation` with FIFO intent receipts, sequenced events,
-   persistent grip/heat/stability/damage/gap state, and immutable snapshots.
-4. Derive compile-time-separated Engineer and Driver views and assert that each
-   omits the other role's privileged information.
-5. Implement and sweep the first three exchanges: proactive Driver feel →
-   pace/risk, blind-crest braking margin, and rival attack/defence. Add runtime
-   legal/outer corridor assertions for every vehicle and every tick.
-6. Prove AFK, conservative, good, wrong, and timing-shift traces for this slice;
-   then integrate it into the browser before adding the incident and feint.
-7. Update this section and `docs/codex-log.md`, run the simulations below, build,
-   capture browser evidence, and create the next Git checkpoint.
+4. Re-run the local browser full slice and capture start, calm/feel, blind crest,
+   defence, consequence, and retry screenshots plus console state. Browser
+   permission was denied in the interrupted session, so do not mark this gate
+   complete from the simulator alone.
+5. Connect the unseen incident with race-control hazard evidence, causal
+   lift/route choices, and a normal-seed AFK DNF path; then add visible-position
+   feint/switch and feed its cover into the protected NOW model.
+6. Add final defence, full 3–5 minute start→pressure→climax→finish/DNF→retry
+   traces, and run the A–I EN/KR desktop/small-viewport playtest matrix.
+7. Add secure PTT/realtime scaffolding and latency timestamps; stop only at the
+   exact missing project-scoped credential for live audio.
+8. Update this section/log, run relevant simulations/build/browser evidence, and
+   create the next checkpoint. Do not deploy.
 
 Baseline commands:
 
@@ -230,6 +275,7 @@ Baseline commands:
 npm run test:commands
 npm run sim:fixed-step
 npm run sim:track
+npm run sim:race
 npm run sim:overtake
 npm run sim:overtake-runtime
 npm run build

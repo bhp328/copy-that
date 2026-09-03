@@ -11,6 +11,7 @@
     "sim:overtake": "tsc -p tsconfig.sim.json && node .sim-dist/scripts/sim-overtake.js",
     "sim:overtake-runtime": "tsc -p tsconfig.sim.json && node .sim-dist/scripts/sim-overtake-runtime.js",
     "sim:track": "tsc -p tsconfig.sim.json && node .sim-dist/scripts/sim-track.js",
+    "sim:race": "tsc -p tsconfig.sim.json && node .sim-dist/scripts/sim-race.js",
     "test:commands": "tsc -p tsconfig.sim.json && node .sim-dist/scripts/sim-commands.js"
   },
   "dependencies": {

@@ -2,6 +2,7 @@ import { parseDriverCommand, type DriverCommand } from './commandParser';
 import type { Language } from './localization';
 import { getRaceText } from './raceText';
 import type { SprintRaceSnapshot } from './raceSession';
+import type { RebuildSnapshot } from './raceSession';
 import type { CircuitCorner, CircuitMapPoint } from './track';
 
 export interface RaceEngineerUIOptions {
@@ -314,12 +315,14 @@ export class RaceEngineerUI {
     this.standby = el('span', 'command-deck__standby');
     commandHeader.append(this.commandsHeading, this.standby);
     const paceRow = el('div', 'command-row command-row--pace');
-    paceRow.append(this.createCommandButton('push'), this.createCommandButton('hold'));
+    paceRow.append(this.createCommandButton('push'), this.createCommandButton('hold'), this.createCommandButton('save'));
+    const cornerRow = el('div', 'command-row command-row--corner');
+    cornerRow.append(this.createCommandButton('early'), this.createCommandButton('normal'), this.createCommandButton('late'));
     const lineRow = el('div', 'command-row command-row--line');
-    lineRow.append(this.createCommandButton('inside'), this.createCommandButton('outside'));
+    lineRow.append(this.createCommandButton('inside'), this.createCommandButton('outside'), this.createCommandButton('yield'));
     const nowRow = el('div', 'command-row command-row--now');
     nowRow.append(this.createCommandButton('now'));
-    commandDeck.append(commandHeader, paceRow, lineRow, nowRow);
+    commandDeck.append(commandHeader, paceRow, cornerRow, lineRow, nowRow);
     consolePanel.append(commandDeck);
 
     this.element.append(this.feed, consolePanel);
@@ -348,34 +351,71 @@ export class RaceEngineerUI {
     setText(this.feedSector, snapshot.sector.toString());
     setText(this.sectorValue, snapshot.sector.toString());
 
-    const cornerName = text.corners[nextCorner.corner.key];
-    setText(this.nextValue, cornerName);
-    setText(this.nextDistance, `${Math.max(0, Math.round(nextCorner.distanceMetres))} m`);
-    const isClear = snapshot.position === 2 && snapshot.core.gapRelation === 'ahead';
-    setText(this.gapValue, isClear ? text.clear : `+${snapshot.gapSeconds.toFixed(1)} s`);
+    const rebuild = snapshot.rebuild;
+    if (rebuild) {
+      setText(this.nextValue, getRebuildNextLabel(rebuild, text));
+      setText(this.nextDistance, `${Math.max(0, Math.round(rebuild.engineer.roadRemainingToDecisionMetres))} m`);
+      setText(this.gapValue, rebuild.engineer.gapMetres <= 0 ? text.clear : `+${Math.max(0, rebuild.engineer.gapMetres).toFixed(1)} m`);
+      const rivalFact = rebuild.engineer.encounter === 'defence'
+        ? text.rivalFact.neutral
+        : rebuild.engineer.lastDriverReport.signal
+          ? getRebuildReportLabel(rebuild, text)
+          : text.rivalFact.neutral;
+      setText(this.rivalFact, rivalFact);
+      this.rivalFact.dataset.state = rebuild.engineer.encounter === 'defence' ? 'alert' : 'neutral';
+    } else {
+      const cornerName = text.corners[nextCorner.corner.key];
+      setText(this.nextValue, cornerName);
+      setText(this.nextDistance, `${Math.max(0, Math.round(nextCorner.distanceMetres))} m`);
+      const isClear = snapshot.position === 2 && snapshot.core.gapRelation === 'ahead';
+      setText(this.gapValue, isClear ? text.clear : `+${snapshot.gapSeconds.toFixed(1)} s`);
 
-    const defenseFact =
-      snapshot.core.defenseReadable && snapshot.phase === 'overtake'
-        ? text.rivalFact[snapshot.core.defenseSide]
-        : text.rivalFact.neutral;
-    setText(this.rivalFact, defenseFact);
-    this.rivalFact.dataset.state = snapshot.core.defenseReadable ? 'alert' : 'neutral';
+      const defenseFact =
+        snapshot.core.defenseReadable && snapshot.phase === 'overtake'
+          ? text.rivalFact[snapshot.core.defenseSide]
+          : text.rivalFact.neutral;
+      setText(this.rivalFact, defenseFact);
+      this.rivalFact.dataset.state = snapshot.core.defenseReadable ? 'alert' : 'neutral';
+    }
 
     setMarkerPosition(this.mapPlayer, this.mapPoints, snapshot.playerTotalProgress);
     setMarkerPosition(this.mapRival, this.mapPoints, snapshot.rivalTotalProgress);
     setMarkerPosition(this.mapLeader, this.mapPoints, snapshot.leaderTotalProgress);
 
-    const cue = getCue(snapshot, text);
+    const cue = rebuild ? getRebuildCue(rebuild, text) : getCue(snapshot, text);
     setText(this.cueText, cue.text);
     this.cue.dataset.tone = cue.tone;
     this.cue.hidden = snapshot.phase === 'ready' || snapshot.phase === 'finished';
 
-    this.updateCommandButton('push', snapshot.canCallPace, snapshot.paceDecision === 'push');
-    this.updateCommandButton('hold', snapshot.canCallPace, snapshot.paceDecision === 'hold');
-    this.updateCommandButton('inside', snapshot.canCallIntent, snapshot.intent === 'inside');
-    this.updateCommandButton('outside', snapshot.canCallIntent, snapshot.intent === 'outside');
-    this.updateCommandButton('now', snapshot.canCallNow, snapshot.nowCalled);
-    const anyCallAvailable = snapshot.canCallPace || snapshot.canCallIntent || snapshot.canCallNow;
+    if (rebuild) {
+      const paceOpen = rebuild.engineer.allowedCalls.includes('setPace');
+      const crestOpen = rebuild.engineer.allowedCalls.includes('setCornerApproach');
+      const defenceOpen = rebuild.engineer.allowedCalls.includes('setDefence');
+      this.updateCommandButton('push', paceOpen, rebuild.diagnostics.paceMode === 'push');
+      this.updateCommandButton('hold', paceOpen, rebuild.diagnostics.paceMode === 'hold');
+      this.updateCommandButton('save', paceOpen, rebuild.diagnostics.paceMode === 'save');
+      this.updateCommandButton('early', crestOpen, rebuild.diagnostics.cornerApproach === 'early');
+      this.updateCommandButton('normal', crestOpen, rebuild.diagnostics.cornerApproach === 'normal');
+      this.updateCommandButton('late', crestOpen, rebuild.diagnostics.cornerApproach === 'late');
+      this.updateCommandButton('inside', defenceOpen, rebuild.diagnostics.defenceMode === 'inside');
+      this.updateCommandButton('outside', defenceOpen, rebuild.diagnostics.defenceMode === 'outside');
+      this.updateCommandButton('yield', defenceOpen, rebuild.diagnostics.defenceMode === 'yield');
+      this.updateCommandButton('now', false, false);
+    } else {
+      this.updateCommandButton('push', snapshot.canCallPace, snapshot.paceDecision === 'push');
+      this.updateCommandButton('hold', snapshot.canCallPace, snapshot.paceDecision === 'hold');
+      this.updateCommandButton('save', false, false);
+      this.updateCommandButton('early', false, false);
+      this.updateCommandButton('normal', false, false);
+      this.updateCommandButton('late', false, false);
+      this.updateCommandButton('inside', snapshot.canCallIntent, snapshot.intent === 'inside');
+      this.updateCommandButton('outside', snapshot.canCallIntent, snapshot.intent === 'outside');
+      this.updateCommandButton('yield', false, false);
+      this.updateCommandButton('now', snapshot.canCallNow, snapshot.nowCalled);
+    }
+    const anyCallAvailable = rebuild
+      ? rebuild.engineer.allowedCalls.some((call) => call !== 'askDriver')
+      : snapshot.canCallPace || snapshot.canCallIntent || snapshot.canCallNow;
     this.standby.classList.toggle('is-live', anyCallAvailable);
     setText(this.standby, anyCallAvailable ? text.channelOpen : text.standby);
 
@@ -398,8 +438,8 @@ export class RaceEngineerUI {
         `DRV // ${text.radioLine[achieved ? 'targetAchieved' : 'targetMissed']}`,
       );
       setText(this.resultTime, formatRaceTime(snapshot.elapsedSeconds));
-      const paceKey = snapshot.paceDecision ?? 'none';
-      setText(this.resultPace, text.paceValues[paceKey]);
+      const paceKey = snapshot.rebuild?.diagnostics.paceMode ?? snapshot.paceDecision ?? 'none';
+      setText(this.resultPace, paceKey === 'save' ? text.save : text.paceValues[paceKey]);
       this.resultOverlay.dataset.result = achieved ? 'success' : 'missed';
     }
 
@@ -499,8 +539,13 @@ export class RaceEngineerUI {
     setText(this.commandsHeading, text.commands);
     setText(this.commandButtons.get('push'), text.push);
     setText(this.commandButtons.get('hold'), text.hold);
+    setText(this.commandButtons.get('save'), text.save);
+    setText(this.commandButtons.get('early'), text.early);
+    setText(this.commandButtons.get('normal'), text.normal);
+    setText(this.commandButtons.get('late'), text.late);
     setText(this.commandButtons.get('inside'), text.inside);
     setText(this.commandButtons.get('outside'), text.outside);
+    setText(this.commandButtons.get('yield'), text.yield);
     setText(this.commandButtons.get('now'), text.now);
     setText(this.audioButton, this.audioMuted ? text.soundOff : text.soundOn);
     setText(this.resultEyebrow, text.finishTitle);
@@ -590,6 +635,39 @@ function toMapPath(points: readonly CircuitMapPoint[]): string {
   return points
     .map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x.toFixed(2)} ${point.y.toFixed(2)}`)
     .join(' ') + ' Z';
+}
+
+function getRebuildNextLabel(rebuild: RebuildSnapshot, text: ReturnType<typeof getRaceText>): string {
+  switch (rebuild.engineer.upcoming.label) {
+    case 'pace_window': return text.cue.pace;
+    case 'blind_crest': return text.radioLine.blindCrest;
+    case 'rival_attack': return text.radioLine.rivalClosing;
+    case 'release': return text.cue.racing;
+    case 'complete': return rebuild.diagnostics.phase === 'dnf' ? text.radioLine.contact : text.cue.bringHome;
+    default: return text.cue.racing;
+  }
+}
+
+function getRebuildReportLabel(rebuild: RebuildSnapshot, text: ReturnType<typeof getRaceText>): string {
+  if (rebuild.engineer.lastDriverReport.topic === 'feel') return text.radioLine.feelReport;
+  if (rebuild.engineer.lastDriverReport.topic === 'visibility') return text.radioLine.blindCrest;
+  if (rebuild.engineer.lastDriverReport.topic === 'space') return text.radioLine.rivalClosing;
+  return text.rivalFact.neutral;
+}
+
+function getRebuildCue(
+  rebuild: RebuildSnapshot,
+  text: ReturnType<typeof getRaceText>,
+): { text: string; tone: string } {
+  if (rebuild.diagnostics.phase === 'ready') return { text: text.cue.ready, tone: 'neutral' };
+  if (rebuild.diagnostics.phase === 'dnf') return { text: text.radioLine.contact, tone: 'warning' };
+  if (rebuild.diagnostics.phase === 'sliceComplete') {
+    return { text: rebuild.diagnostics.position === 2 ? text.cue.success : text.cue.bringHome, tone: rebuild.diagnostics.position === 2 ? 'success' : 'warning' };
+  }
+  if (rebuild.engineer.encounter === 'pace') return { text: text.cue.pace, tone: 'action' };
+  if (rebuild.engineer.encounter === 'crest') return { text: text.radioLine.blindCrest, tone: 'warning' };
+  if (rebuild.engineer.encounter === 'defence') return { text: text.cue.line, tone: 'action' };
+  return { text: text.cue.racing, tone: 'neutral' };
 }
 
 function getCue(

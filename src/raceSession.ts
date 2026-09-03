@@ -3,6 +3,12 @@ import type {
   CoreOvertakeSnapshot,
   DriverMessageKey,
 } from './overtakeSimulation';
+import type {
+  EngineerRaceView,
+  DriverRaceView,
+  RacePresentationView,
+  RaceDiagnosticsView,
+} from './raceSimulation.js';
 import {
   kmhToMetresPerSecond,
   metresPerSecondToKmh,
@@ -36,7 +42,22 @@ export type RaceRadioKey =
   | 'finalLap'
   | 'targetAhead'
   | 'targetAchieved'
-  | 'targetMissed';
+  | 'targetMissed'
+  | 'feelReport'
+  | 'blindCrest'
+  | 'crestClean'
+  | 'crestEmergency'
+  | 'rivalClosing'
+  | 'defenceHeld'
+  | 'safeYield'
+  | 'contact';
+
+export interface RebuildSnapshot {
+  readonly engineer: EngineerRaceView;
+  readonly driver: DriverRaceView;
+  readonly presentation: RacePresentationView;
+  readonly diagnostics: RaceDiagnosticsView;
+}
 
 interface OvertakePort {
   readonly snapshot: CoreOvertakeSnapshot;
@@ -73,6 +94,7 @@ export interface SprintRaceSnapshot {
   radioKey: RaceRadioKey | null;
   radioSequence: number;
   core: CoreOvertakeSnapshot;
+  readonly rebuild?: RebuildSnapshot;
 }
 
 const COUNTDOWN_SECONDS = 3.6;
@@ -131,6 +153,7 @@ export class SprintRaceSession {
       return this.issuePace(command);
     }
     if (command === 'now') return this.issueNow();
+    if (command !== 'inside' && command !== 'outside') return false;
     return this.issueIntent(command);
   }
 

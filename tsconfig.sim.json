@@ -18,10 +18,13 @@
     "src/trackSpec.ts",
     "src/trackGeometry.ts",
     "src/trackValidation.ts",
+    "src/raceCorridor.ts",
+    "src/raceSimulation.ts",
     "scripts/sim-overtake.ts",
     "scripts/sim-overtake-runtime.ts",
     "scripts/sim-fixed-step.ts",
     "scripts/sim-track.ts",
+    "scripts/sim-race.ts",
     "scripts/sim-commands.ts"
   ]
 }

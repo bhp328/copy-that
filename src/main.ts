@@ -21,6 +21,11 @@ import {
   getNextCircuitCorner,
   placeTrackObject,
 } from './track';
+import { RaceSimulation } from './raceSimulation';
+import {
+  createRebuildBrowserSnapshot,
+  raceActionForDriverCommand,
+} from './raceSimulationAdapter';
 import './release.css';
 
 const appElement = document.querySelector<HTMLDivElement>('#app');
@@ -58,10 +63,12 @@ const forcedDefense: DefenseSelectionMode =
       : 'seeded';
 const seedParameter = queryParameters.get('seed');
 const requestedSeed = seedParameter === null ? Number.NaN : Number(seedParameter);
+const sessionSeed = Number.isFinite(requestedSeed) ? requestedSeed : createSessionSeed();
+const rebuildMode = queryParameters.get('legacy') !== '1';
 
 const overtake = new CoreOvertakeSimulation(track.length, {
   defenseMode: forcedDefense,
-  seed: Number.isFinite(requestedSeed) ? requestedSeed : createSessionSeed(),
+  seed: sessionSeed,
   startTotalProgress: SPRINT_OVERTAKE_START_TOTAL_PROGRESS,
   repeatAddsLap: false,
 });
@@ -84,9 +91,12 @@ const raceLeader = createFormulaCar({
 }).group;
 scene.add(fieldRival, raceLeader);
 
-const session = new SprintRaceSession(track.length, overtake);
+const legacySession = rebuildMode ? null : new SprintRaceSession(track.length, overtake);
+const raceSimulation = new RaceSimulation({ seed: sessionSeed, trackLengthMetres: track.length });
 const debugStage = queryParameters.get('stage');
-const initial = session.snapshot;
+const initial = rebuildMode
+  ? createRebuildBrowserSnapshot(raceSimulation, track.length)
+  : legacySession?.snapshot ?? createRebuildBrowserSnapshot(raceSimulation, track.length);
 const simulationClock = new FixedStepClock();
 let latestSnapshot = initial;
 const car = new CarController(track.curve, 'normal', initial.playerTotalProgress);
@@ -104,19 +114,30 @@ const ui = new RaceEngineerUI({
   onStart: () => {
     void audio.start();
     simulationClock.reset();
-    if (debugEnabled && (debugStage === 'pace' || debugStage === 'overtake')) {
-      session.debugJumpTo(debugStage);
+    if (rebuildMode) {
+      raceSimulation.enqueue({ kind: 'start' }, 'debug');
+      raceSimulation.step();
+      latestSnapshot = createRebuildBrowserSnapshot(raceSimulation, track.length);
+    } else if (debugEnabled && (debugStage === 'pace' || debugStage === 'overtake')) {
+      legacySession?.debugJumpTo(debugStage);
+      latestSnapshot = legacySession?.snapshot ?? initial;
     } else {
-      session.start();
+      legacySession?.start();
+      latestSnapshot = legacySession?.snapshot ?? initial;
     }
-    latestSnapshot = session.snapshot;
     renderInterface(latestSnapshot);
   },
   onRetry: () => {
-    session.restart();
-    session.start();
-    simulationClock.reset();
-    latestSnapshot = session.snapshot;
+    if (rebuildMode) {
+      raceSimulation.enqueue({ kind: 'retry' }, 'debug');
+      raceSimulation.step();
+      latestSnapshot = createRebuildBrowserSnapshot(raceSimulation, track.length);
+    } else {
+      legacySession?.restart();
+      legacySession?.start();
+      simulationClock.reset();
+      latestSnapshot = legacySession?.snapshot ?? initial;
+    }
     lastRadioSequence = latestSnapshot.radioSequence;
     lastOutcome = 'pending';
     syncRaceView(latestSnapshot, true);
@@ -130,10 +151,23 @@ const debugPanel = debugEnabled && queryParameters.get('panel') !== '0'
   : null;
 
 function handleCommand(command: DriverCommand): boolean {
-  const accepted = session.issueCommand(command);
+  let accepted = false;
+  if (rebuildMode) {
+    const action = raceActionForDriverCommand(command);
+    const engineerView = raceSimulation.getEngineerView();
+    if (action && engineerView.allowedCalls.includes(action.kind)) {
+      raceSimulation.enqueue(action, 'text');
+      accepted = true;
+    }
+  } else {
+    accepted = legacySession?.issueCommand(command) ?? false;
+  }
   if (accepted) {
     audio.playRadioClick();
-    renderInterface(session.snapshot);
+    latestSnapshot = rebuildMode
+      ? createRebuildBrowserSnapshot(raceSimulation, track.length)
+      : legacySession?.snapshot ?? latestSnapshot;
+    renderInterface(latestSnapshot);
   }
   return accepted;
 }
@@ -258,7 +292,12 @@ renderer.setAnimationLoop(() => {
   previousFrameTime = currentFrameTime;
 
   simulationClock.advance(deltaSeconds, (fixedDeltaSeconds) => {
-    latestSnapshot = session.update(fixedDeltaSeconds);
+    if (rebuildMode) {
+      raceSimulation.step();
+      latestSnapshot = createRebuildBrowserSnapshot(raceSimulation, track.length);
+    } else {
+      latestSnapshot = legacySession?.update(fixedDeltaSeconds) ?? latestSnapshot;
+    }
   });
   const snapshot = latestSnapshot;
   car.setSimulationState(

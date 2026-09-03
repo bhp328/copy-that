@@ -1,5 +1,48 @@
 # Codex Log
 
+## 2026-08-28 - Rebuild M2: deterministic first-three encounter slice
+
+### Implemented
+
+- Added the pure 60 Hz `RaceSimulation` action/event authority and
+  `raceCorridor` helper. The browser adapter now consumes frozen role-specific
+  projections instead of making UI or DOM state authoritative.
+- Added persistent pace/condition state, a route-positioned blind crest, and a
+  visible-line-reactive rival defence. The slice emits causal reason codes and
+  Moment markers for clean crest, emergency save, held defence, safe yield, and
+  contact.
+- Expanded EN/KR command fallback vocabulary to SAVE, EARLY, NORMAL, LATE, and
+  YIELD. The default browser mode exposes those context-valid calls; the old
+  overtake shell remains only behind `?legacy=1` for regression comparison.
+
+### Verification and rejected assumptions
+
+- `npm run sim:race` passes AFK emergency save + safe yield, conservative safe
+  miss, good clean/held P2, wrong late/spin/contact DNF, timing separation,
+  role-view omission/freeze, FIFO duplicate rejection, and 30/60/120 render
+  schedules with identical event sequences.
+- Full command, fixed-step, track, protected-overtake, runtime-overtake, and
+  production-build checks remain green.
+- Checkpoint re-verification on 2026-09-03 reran `test:commands`,
+  `sim:fixed-step`, `sim:track`, `sim:overtake`, `sim:overtake-runtime`,
+  `sim:race`, and `build`; all exited 0. The build retained only the existing
+  non-blocking chunk-size advisory. No browser full-run evidence was added.
+- Rejected the first condition-rate tuning that drove grip to zero during one
+  slice; the rates were reduced to per-second hypothesis values and timing was
+  re-swept. A late semantic brake call still resolves to a different physical
+  margin rather than widening the window.
+- Local Browser automation was attempted after the production build; the
+  in-app Browser auto-review denied localhost access. No screenshot, console,
+  or Fun-gate claim is promoted from that blocked attempt.
+
+### Next decision boundary
+
+- Browser-prove the first three beats, then extend this same authority with the
+  unseen incident, feint/switch, protected NOW, and final defence. Keep the
+  current track and overtake boundary unchanged unless a failing test proves a
+  defect.
+- No deployment was performed.
+
 ## 2026-08-28 - Rebuild M1: deterministic authority and track safety
 
 ### Implemented

@@ -34,6 +34,11 @@ export interface RaceUiText {
   standby: string;
   push: string;
   hold: string;
+  save: string;
+  early: string;
+  normal: string;
+  late: string;
+  yield: string;
   inside: string;
   outside: string;
   now: string;
@@ -101,14 +106,19 @@ export const RACE_UI_TEXT = {
     radio: 'DRIVER RADIO',
     channelOpen: 'CHANNEL OPEN',
     radioHint: 'Short calls map to deterministic Driver commands.',
-    radioPlaceholder: 'PUSH / OUTSIDE / NOW',
+    radioPlaceholder: 'PUSH / EARLY / OUTSIDE / YIELD',
     transmit: 'TRANSMIT',
     unavailable: 'CALL NOT AVAILABLE IN THIS RACE STATE',
-    unrecognized: 'USE PUSH, HOLD, INSIDE, OUTSIDE, OR NOW',
+    unrecognized: 'USE PUSH, HOLD, SAVE, EARLY, NORMAL, LATE, INSIDE, OUTSIDE, OR YIELD',
     commands: 'DRIVER CALLS',
     standby: 'STANDBY FOR THE NEXT CALL',
     push: 'PUSH',
     hold: 'HOLD',
+    save: 'SAVE',
+    early: 'EARLY',
+    normal: 'NORMAL',
+    late: 'LATE',
+    yield: 'YIELD',
     inside: 'INSIDE',
     outside: 'OUTSIDE',
     now: 'NOW',
@@ -167,6 +177,14 @@ export const RACE_UI_TEXT = {
       gotHim: 'Got him. Nice call.',
       targetAchieved: "That's P2. Good work.",
       targetMissed: 'P3. We left that one out there.',
+      feelReport: 'Balance report received.',
+      blindCrest: 'Blind crest ahead. I need the brake call.',
+      crestClean: 'Clean over the crest. Car is settled.',
+      crestEmergency: 'Saving it—no sight line, no margin.',
+      rivalClosing: 'Rival closing. Tell me where to cover.',
+      defenceHeld: 'Held him. That cost the tyres.',
+      safeYield: 'No fight there. I am keeping it clean.',
+      contact: 'Contact. The car is hurt.',
     },
     corners: {
       orbit: 'ORBIT HAIRPIN',
@@ -204,14 +222,19 @@ export const RACE_UI_TEXT = {
     radio: '드라이버 무전',
     channelOpen: '채널 열림',
     radioHint: '짧은 지시는 정해진 드라이버 명령으로 연결됩니다.',
-    radioPlaceholder: '푸시 / 아웃사이드 / 지금',
+    radioPlaceholder: '푸시 / 일찍 / 아웃사이드 / 양보',
     transmit: '전송',
     unavailable: '현재 레이스 상황에서는 받을 수 없는 지시입니다',
-    unrecognized: '푸시, 유지, 인사이드, 아웃사이드 또는 지금을 사용하세요',
+    unrecognized: '푸시, 유지, 세이브, 일찍, 보통, 늦게, 인사이드, 아웃사이드 또는 양보를 사용하세요',
     commands: '드라이버 지시',
     standby: '다음 지시를 준비하세요',
     push: '푸시',
     hold: '유지',
+    save: '세이브',
+    early: '일찍',
+    normal: '보통',
+    late: '늦게',
+    yield: '양보',
     inside: '인사이드',
     outside: '아웃사이드',
     now: '지금',
@@ -270,6 +293,14 @@ export const RACE_UI_TEXT = {
       gotHim: '잡았다. 좋은 지시였어.',
       targetAchieved: 'P2다. 잘했어.',
       targetMissed: 'P3. 잡을 수 있었는데.',
+      feelReport: '밸런스 리포트 받았다.',
+      blindCrest: '블라인드 크레스트 앞. 제동 지시가 필요해.',
+      crestClean: '크레스트 클린. 차가 안정됐어.',
+      crestEmergency: '살리고 있어—시야도 마진도 없어.',
+      rivalClosing: '상대가 붙는다. 어디를 막을지 말해줘.',
+      defenceHeld: '막았다. 타이어를 썼어.',
+      safeYield: '여긴 싸우지 않아. 깨끗하게 간다.',
+      contact: '접촉. 차가 다쳤어.',
     },
     corners: {
       orbit: '오비트 헤어핀',
