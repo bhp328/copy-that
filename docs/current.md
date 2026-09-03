@@ -17,6 +17,8 @@ gates, and the exact continuation point for the COPY THAT? 2.0 rebuild.
 ## Repository State
 
 - Branch: `master`.
+- GitHub: private `origin` at `https://github.com/bhp328/copy-that`; `master`
+  tracks `origin/master`.
 - Safe pre-rebuild baseline: `2b981b0 Checkpoint submitted vertical slice baseline`.
 - Phase 0 evidence checkpoint: `acb5019 Document Phase 0 rebuild audit`.
 - That checkpoint contains the complete previously submitted Meridian Sprint
