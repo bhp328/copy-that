@@ -1,5 +1,109 @@
 # Codex Log
 
+## 2026-09-03 - Zero-Based Product Reset and legacy diff survival review
+
+### Trigger and authority
+
+- Read remote GitHub Issue #1, "PRODUCT RESET — Steam-first 2-player flagship
+  decision record", directly through the linked GitHub repository. Its active
+  direction is now folded into repo docs.
+- Started from
+  5ec810fdd9ec70a2c63f51fb8ef6690a3c22b22f
+  (Document Steam audit and human test gate), master tracking origin/master,
+  no staged changes.
+- Read the complete 10-file stopped M2 repair diff before modifying or restoring
+  it: 665 insertions / 91 deletions.
+
+### Product reset
+
+- Rewrote docs/north-star.md around the whole-product thesis:
+  "Conversation is the control system. Driver drives the car. Engineer drives
+  the race. Neither has enough information alone."
+- Froze Steam PC and online Human Driver × Human Engineer as the flagship.
+  Solo now means an AI teammate fills either missing role.
+- Froze voice/PTT as primary communication, direct physical Driver control,
+  Engineer evidence-source selection, hard-but-legible mastery, continuous
+  causal consequence, and the creator/hardcore pillar.
+- Unfroze production engine, exact simcade physics, network authority/topology,
+  voice transport/provider, Engineer feed layout, and race/content quantities.
+- Explicitly rejected command-button normal play, typed chat as normal control,
+  production spline/rail driving, cockpit-only Engineer law, stitched scenarios,
+  Web constraints as production architecture, and implementation preservation by
+  inertia.
+- Updated AGENTS.md so future work cannot revive its obsolete fixed Three.js,
+  browser-first, spline-vehicle rules.
+
+### New source of truth
+
+- Added docs/steam-product-plan.md for modes, role fantasies/verbs,
+  communication/race/difficulty/creator loops, accessibility, AI boundaries,
+  scope guardrails, and Frozen/Unproven/Rejected state.
+- Added docs/preproduction-plan.md for Stage 0 Reset → Stage 1 risk prototypes →
+  Stage 2 equal Godot/Unity spikes → Stage 3 true Steam vertical slice →
+  Production → Alpha → Beta → Steam Playtest → Demo → Launch.
+- Added docs/technical-decision-gates.md for simcade physics, two-player
+  authority/prediction/topology, Steam lobby/SDR boundaries, PTT/voice,
+  accessibility/safety, engine weighting, input/wheel, replay/Moment/Timeline,
+  and freeze evidence.
+- Replaced docs/current.md with a short operational reset status and exact
+  RESUME HERE order.
+- Marked docs/steam-zero-based-audit.md and docs/human-test-protocol.md
+  SUPERSEDED / HISTORICAL without deleting their evidence.
+
+### Legacy repair survival result
+
+- Captured every file and logical hunk in
+  docs/legacy-diff-survival-review.md before deletion.
+- KEEP CODE: none.
+- PORT PRINCIPLE ONLY: objective/role coherence; fair evidence before choice;
+  acknowledgement before outcome; perspective-correct spatial language;
+  continuous physical causality; semantic Moment/reason events.
+- ARCHIVE EVIDENCE: the old causal probes, mirrored tests, gap/lateral
+  continuity checks, camera-clipping diagnosis, and EN/KR copy repair.
+- DELETE as production code: parser/button vocabulary, AI acknowledgements tied
+  to the old command deck, DOM radar/dashboard, CSS, Web adapter mappings,
+  spline presentation smoothing, and old deterministic defence tuning.
+- Restored exactly these files to HEAD after capture:
+  scripts/sim-commands.ts, scripts/sim-race.ts, src/commandParser.ts,
+  src/main.ts, src/raceEngineerUI.ts, src/raceSession.ts,
+  src/raceSimulation.ts, src/raceSimulationAdapter.ts, src/raceText.ts, and
+  src/release.css.
+
+### Research and skill effects
+
+- Game Studio architecture guidance reinforced simulation/render/input
+  separation, role-action boundaries, low-chrome Driver presentation,
+  evidence-focused Engineer hierarchy, and screenshot/human-playtest gates. Its
+  browser stack defaults were not allowed to choose the Steam engine.
+- The Three.js specialist guidance confirmed that the old renderer, DOM UI, and
+  adapter are presentation layers rather than race authority and should not be
+  ported by inertia.
+- Steamworks documentation separated lobby/matchmaking from gameplay transport,
+  Steam Voice capture from packet transport, and Steam Timeline from the game's
+  semantic event source of truth.
+- Unity/Godot official vehicle documentation and GDC vehicle-feel talks changed
+  the engine gate from feature-list scoring to an equal measured handling spike.
+- Microsoft communication accessibility guidance expanded the gate from
+  captions alone to STT/TTS plus accessible invite, lobby, settings, volume,
+  mute, block, and report paths.
+- No plugin or engine installation was justified.
+
+### Verification and next decision
+
+- Final gameplay source equals the 5ec810f baseline; no gameplay, physics,
+  network, voice, engine, dependency, deployment, or generated artifact was
+  added.
+- Executable tests were not rerun because the final change is documentation-only.
+  Earlier executable evidence remains historical and is not proof of the new
+  flagship.
+- The first next risk is R1 Human×Human Conversation Contract: two separate
+  stations, direct greybox Driver control, Engineer-only evidence, controlled
+  PTT, one continuous 60–90 second encounter, and silence/shared-information
+  comparisons. It is first because it tests flagship interdependence more
+  cheaply than engine, networking, content, or polish.
+- No production engine has been selected, and no legacy Web implementation is
+  automatically preserved.
+
 ## 2026-09-03 - Steam audit checkpoint and human-test protocol freeze
 
 - This docs-only checkpoint captures the previously uncommitted Steam-first

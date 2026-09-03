@@ -1,5 +1,22 @@
 # COPY THAT? — Steam-first Zero-Based Product/Tech Audit
 
+> [!WARNING]
+> **SUPERSEDED / HISTORICAL — 2026-09-03**
+>
+> This audit governed the previous AI-solo/Web M2 decision gate. It remains
+> evidence of what the old harness proved and failed to prove, but it no longer
+> controls product direction, development stage, engine timing, or production
+> survival. Current authority is
+> [North Star](./north-star.md),
+> [Steam Product Plan](./steam-product-plan.md),
+> [Pre-production Plan](./preproduction-plan.md),
+> [Technical Decision Gates](./technical-decision-gates.md), and
+> [Current Project Truth](./current.md).
+>
+> In particular, the old requirement that Web M2 pass before native risk work,
+> the Engineer-only/AI Driver product weighting, and the old engine weights are
+> superseded. Do not execute this document's Next decision as the active plan.
+
 Date: 2026-09-03
 
 Authority baseline: commit 5a98f95, Checkpoint deterministic M2 encounter slice

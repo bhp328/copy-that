@@ -1,240 +1,275 @@
 # COPY THAT? — NORTH STAR
 
-This is the stable product and design constitution for COPY THAT?. It should
-change rarely, and only after explicit user direction or strong playtest evidence
-reviewed with the user.
+This is the stable product and design constitution for COPY THAT?. It changes
+only through explicit product direction or strong, reviewed human evidence.
+Implementation, sunk cost, tools, engines, plugins, and model taste are
+subordinate.
 
-## Product Thesis
+## Whole-product thesis
 
-- **A racing game where communication is the control system.**
-- **You don't drive the car. You drive the Driver.**
-- Red-team refinement: **Conversation is the control system. Voice is its primary interface.**
+**Conversation is the control system.**
 
-## Core Fantasy
+**Driver drives the car. Engineer drives the race. Neither has enough
+information alone.**
 
-- The player is a Formula-style Race Engineer working with a Driver under extreme racing pressure.
-- This is not a full race-engineer simulator. Fun comes from incomplete information, judgment, timing, trust, panic, banter, mistakes, saves, and shared race consequences.
-- Current solo expression: Human Engineer × AI Driver.
-- Long-term ultimate expression: Human Engineer × Human Driver asymmetric multiplayer.
+COPY THAT? is a Steam-first online two-player asymmetric Formula racing co-op
+game. Human Driver × Human Engineer is the flagship fantasy. The Engineer-role
+phrase "You do not drive the car; you drive the Driver" may still describe that
+role, but it is not the whole-product thesis.
 
-## Core Laws
+## Flagship, solo, and roles
 
-1. Conversation is the control system; voice/PTT is primary. Text and buttons are fallback, accessibility, and debug paths only.
-2. Engineer knows the race; Driver feels the car.
-3. Neither side has enough information alone.
-4. The Driver handles what he can see and feel; the Engineer protects him from what he cannot see or process in time.
-5. Silence is gameplay. In Engineer-critical situations, silence may cause spin, contact, or DNF when the Engineer had clear advance information.
-6. What you say matters; when you say it matters just as much.
-7. Every meaningful call gets immediate acknowledgement and a visible or audible race consequence.
-8. Difficulty comes from pressure, judgment, incomplete information, timing, opponent response, prior-state consequences, and risk/reward—not unreadable rules, arbitrary randomness, broken STT, or intentionally dumb AI.
-9. The faster and more critical the race gets, the shorter the radio gets.
-10. Engineer UI gives evidence, never the answer.
-11. The Driver can save small instability; he cannot erase the Engineer's bad strategic or risk decision.
-12. Personality may surprise; rules and outcomes stay understandable and causally legible.
-13. Memory is data; personality is AI. History and trust facts are deterministic state; AI expresses them naturally.
-14. No Empty Racing.
-15. UI, audio, dialogue, track design, events, camera, and simulation serve the same emotional and gameplay beat.
+- Flagship: online Human Driver × Human Engineer.
+- Driver: directly controls the car and owns immediate feel, visibility, and
+  local space.
+- Engineer: selects evidence, builds the larger picture, communicates what is
+  next or global, and shapes the race.
+- Solo: AI fills the missing teammate role as training, fallback, or an alternate
+  way to play:
+  - Human Driver + AI Engineer.
+  - Human Engineer + AI Driver.
+- AI is not the reason the flagship exists and may never turn either human role
+  into a spectator.
 
-## Fun-First Tests
+## Core laws
 
-- **2AM Test:** The game is fun enough to make someone want another run even alone, with no audience, recording, or social reward.
-- **10-Second Clip Test:** A newcomer can understand why a moment is tense, funny, or skillful within about 10 seconds.
-- A feature is valuable only if it materially increases agency, tension, mastery, relationship, spectacle, replayability, or clip-generative stories.
-- Use the latest technology aggressively when it strengthens the core; reject technology that mainly demonstrates itself.
+1. Conversation is the control system; voice/PTT is its primary interface.
+2. The Driver drives. Steering, throttle, brake, gear, car placement, and
+   recovery are physical player execution in the flagship.
+3. The Engineer drives the race through judgment, timing, synthesis, and
+   communication, not command buttons.
+4. Engineer knows NEXT/GLOBAL; Driver knows NOW/FEEL. Neither screen contains
+   enough information to solve the race alone.
+5. Engineer UI provides evidence, never the answer.
+6. Information selection costs attention. No role receives every feed and every
+   warning at once without a tradeoff.
+7. Silence is gameplay. Missing a useful call can lose time or position; missing
+   an Engineer-critical call can cause spin, contact, damage, or DNF when the
+   advance evidence was fair.
+8. What is said and when it is said both matter.
+9. Acknowledgement confirms mutual understanding or intent. Success, failure,
+   position, contact, and safety are reported only after the world resolves them.
+10. Every meaningful beat follows a legible causal chain: communication,
+    acknowledgement, physical or strategic commitment, rival/world response,
+    fair consequence, emotional release.
+11. Opponents react to observable car behavior and race state, not private UI
+    selections or raw voice tokens.
+12. Rules and outcomes are reproducible and explainable even when personality,
+    tactics, and race stories vary.
+13. No Empty Racing. Calm supports anticipation, diagnosis, relationship, or
+    recovery; it is not dead time.
+14. UI, audio, camera, track, physics, voice, networking, and replay serve the
+    same readable race story.
 
-## DDD — Dopamine Driven Development
+## Information law
 
-Treat DDD as a practical design and product heuristic, not settled neuroscience and not stimulation spam.
+The Engineer owns earlier or wider evidence:
 
-**Anticipation → Agency → Commitment → Immediate Feedback → Fair Consequence → Emotional Payoff → Release → Next Hook**
+- upcoming geometry, surface, weather, and hazards;
+- tactical map, gaps, trends, closing rates, and opponent patterns;
+- rear, battle, onboard, trackside, tactical, and race-control sources;
+- strategy, persistent condition, race state, and consequences beyond the
+  Driver's immediate attention.
 
-- No payoff without anticipation; no tension without recovery.
-- Avoid cheap XP or confetti reward spam.
-- Micro loop (~3–10 seconds): communication, reaction, payoff.
-- Meso loop (~30–90 seconds): chase, incident, overtake, problem.
-- Run loop (~3–5 minutes): one coherent race story.
-- Marathon/Contract loop: repeated attempts with long-form stakes and an attempt counter.
+The Driver owns embodied evidence:
 
-## Clip-Generative / Creator Design
+- grip, slip, wheelspin, brake feel, traction, and balance;
+- immediate visibility and local racing line;
+- precise overlap, closing perception, contact risk, and recoverability;
+- the real effort required to execute the Engineer's plan.
 
-- The goal is genuine emergent reaction, not scripted clip farming.
-- Every run should naturally enable at least one retellable Comedy/Fuck-up, Clutch/Save, Mastery/Perfect-call/Feint, or Personality/Banter moment.
-- Spectators should see danger early enough to anticipate success or failure.
-- Creator goals include a facecam-safe HUD, spectator-legible semantics, Moment Engine event timestamps, replay markers, short clip export, Contracts/Hardcore modes, attempt counters, and seeded/shareable challenges.
-- The long-term creator fantasy is difficult Contracts that sustain multi-hour streamer attempts and create an emergent narrative.
+The Driver proactively reports feel, asks, clarifies, disagrees when appropriate,
+and acknowledges. The Engineer listens as well as talks. A good decision often
+requires both halves.
 
-## Engineer / Driver Information Split
+## Engineer interface and camera law
 
-The Engineer knows **NEXT/GLOBAL**:
+- The Engineer manages evidence sources rather than watching one compulsory
+  cockpit feed or an automatic cinematic edit.
+- Feed families may include onboard, rear/battle, trackside, tactical, and race
+  control. Their exact arrangement is unproven.
+- Changing or pinning a source must be fast, comprehensible, and consequential
+  enough to create attention skill without producing arbitrary blindness.
+- The interface surfaces raw or lightly processed evidence, uncertainty, source
+  age, and loss of signal when relevant. It does not label the correct call,
+  suggest a command, or reduce play to a dashboard checklist.
+- Driver and spectator presentation protects spatial reading. Engineer and
+  broadcast views protect causal reading. Neither role is forced to sacrifice
+  playability to visual chrome.
+- A FNAF-like multi-source rhythm is one experiment, not a frozen layout or an
+  automatic-camera mandate.
 
-- upcoming track and corner information
-- tactical map
-- race control
-- rival trend and closing rate
-- gaps
-- attack and defence context
-- hazards the Driver cannot yet see
+## Driver and vehicle law
 
-The Driver knows **NOW/FEEL**:
+- The production target is simcade Formula handling with coherent constraints,
+  immediate control, and a high mastery ceiling.
+- The car must support learnable steering, braking distance, traction, slip/yaw,
+  weight-transfer cues, kerb and surface interaction, collision, recovery, and
+  persistent damage or condition where they serve the race.
+- Opponents share the same meaningful spatial rules.
+- Handling assists may improve approachability but cannot erase execution,
+  communication timing, or risk. Their behavior must be legible and testable.
+- Formula authenticity serves fantasy and skill; it does not require a licensed
+  series, a full aero/tire engineering simulator, or realism that weakens play.
+- Spline/rail authority may remain in historical tools but cannot be the
+  flagship production driving model.
 
-- grip
-- wheelspin
-- brake feel
-- local visibility
-- immediate car balance
-- precise local space near another car
+## Voice, text, and AI law
 
-The Driver should proactively report car feel, ask questions, disagree or clarify appropriately, acknowledge, react, and occasionally joke. The Engineer sometimes needs Driver information before deciding.
+- Human-to-human PTT radio is the flagship communication path.
+- Voice needs clear transmit state, local sidetone/radio feedback, independent
+  volume, mute, block, report, privacy controls, and failure recovery.
+- Captions/speech-to-text, text-to-speech, subtitles, transcripts, and concise
+  quick communication are accessibility paths that preserve participation.
+  They are not a normal-play answer deck.
+- Race-critical human communication must not require generative AI.
+- In solo, AI may perceive authorized role evidence, converse, clarify, and
+  propose constrained actions. It never receives forbidden role information,
+  invents telemetry, or drives the car per frame.
+- Common and time-critical AI teammate responses require a local deterministic
+  fallback. Cloud failure cannot silently change the race.
 
-## Voice / AI Driver Architecture
+## Difficulty
 
-- Deliver a real push-to-talk radio feel.
-- Use realtime speech-to-speech plus function/tool calling when secure and useful.
-- Map flexible natural language into constrained deterministic game actions.
-- The LLM never drives the car per frame.
-- AI handles understanding, clarification, dialogue, banter, emotional expression, and personality.
-- Simulation handles vehicle state, timing windows, race outcomes, opponent behavior, damage, incidents, and fairness.
-- Radio processing should feel transmitted—click, static, filtering, compression—not like clean chatbot audio.
-- Voice latency and reliability are gameplay requirements and should be measured with timestamps.
+**Easy to understand. Hard to execute. Harder to coordinate. Very hard to
+master. Brutal at the highest stakes.**
 
-## Difficulty Philosophy
+Good difficulty comes from physical execution, limited attention, incomplete but
+fair information, communication timing, prior-state consequences, adaptive
+opponents, and hard risk/reward choices.
 
-- **Hard to execute, easy to understand.**
-- Create high cognitive pressure, not impossible reaction time.
-- Strategic decisions may get seconds; commitment moments can be tight.
-- Build difficulty from limited time, combining clear signals, opponent response, prior-state consequences, risk/reward, and communication timing.
-- Never build difficulty from tiny text, opaque rules, arbitrary random punishment, broken STT, or intentionally incompetent Driver AI.
-- First moments teach the communication language; later moments demand mastery.
+Bad difficulty comes from contradictory objectives, tiny or hidden critical
+evidence, random-looking punishment, broken networking or speech recognition,
+bad translation, unreadable camera work, or consequences that cannot be traced
+to a decision and physical event.
 
-## Silence / Failure / DNF
+Failure can be severe. It must also be attributable, learnable, and capable of
+creating a credible "one more attempt" response.
 
-- Radio silence must not be harmless across a full run.
-- In normal visible situations, the Driver can cope alone.
-- In competitive situations, silence loses opportunities or positions.
-- In Engineer-critical unseen or future situations, silence can cause serious consequences up to DNF when clear advance evidence was available.
-- AFK or total silence should not successfully complete a normal full run.
-- Conservative but communicative play may finish safely while missing the target.
-- Reckless or wrong calls may cause contact, spin, damage, or DNF.
-- Crashes are meaningful, relatively rare, causally attributable, and clip-worthy—not random chaos.
+## Race and session composition
 
-## Race / Track / Pressure Composition
+- Each race is one continuous world and state, never a stitched minigame
+  carousel or teleport sequence.
+- Dense short race stories are the working direction. Exact length, lap count,
+  beat count, field size, and content volume remain hypotheses.
+- Useful pressure families include Driver feel/pace, blind crest or unseen
+  corner, rear attack/defence, overtake setup, bluff/feint/switch/commit,
+  yellow/debris/hazard, damage or grip carryover, and final attack/defence.
+- Pressure emerges from track geometry × physical vehicle state × opponent
+  behavior × incomplete information × communication × persistent consequence.
+- Recovery and quiet periods create anticipation, diagnosis, relationship, or
+  release before the next commitment.
 
-- Prefer a dense ~3–5 minute Formula-style sprint over empty repeated laps.
-- Exact lap count is not North Star; use one or two laps only if playtests support it.
-- Five to eight meaningful communication beats per short run is a target, not sacred.
-- The track is level design: every major section creates communication or problem-solving pressure, or spectacle.
-- Useful beat families include blind-crest or unseen-corner warning, pace/risk, Driver grip report, rival attack/defence, yellow/debris/hazard, overtake setup/bluff/feint/switch/commit, and final defence.
-- Do not create a scripted mini-game carousel.
-- Interesting pressure combines Track Pressure + Persistent Race State + Conditional Incident/Event.
-- Results must remain fair and causally legible.
+## DDD and emotional loop
 
-## Opponent / Signaling
+Dopamine Driven Development is a product heuristic, not settled neuroscience
+and not reward spam:
 
-- Opponents react to visible Driver positioning, not raw user commands.
-- Bluff/feint means showing one line, inducing a cover, switching, then committing.
-- Repositioning has a natural time and space cost, not an arbitrary cooldown.
-- Mastery comes from timing and opponent interpretation, not QTE memorization.
+**Anticipation → Agency → Commitment → Immediate Feedback → Fair Consequence →
+Emotional Payoff → Release → Next Hook**
 
-## UI / Frontend × Simulation Contract
+- Micro loop: perceive, communicate, execute, and react.
+- Encounter loop: pressure builds, both roles commit, the world answers.
+- Race loop: one coherent shared story and a meaningful result.
+- Contract loop: repeated races accumulate fair stakes, history, and mastery.
+- No payoff without anticipation and no sustained tension without recovery.
 
-- UI is an attention director, not decoration or a SaaS dashboard.
-- The main Formula cockpit/onboard feed dominates.
-- Calm means low information density; tension reveals relevant evidence; critical states show only actionable evidence prominently; payoff lets clutter recede.
-- Use motorsport, broadcast, and instrumentation language: direct typography, telemetry rails, hairlines, ticks, brackets, dynamic track graphics, and a slim radio lower-third.
-- Avoid rounded-card grids, generic dashboards, and answer-giving UI.
-- Spectator legibility is first-class.
-- Simulation creates pressure and story state; frontend and audio make it legible and emotional; voice changes simulation; payoff feeds presentation.
+## Creator, spectator, and hardcore law
 
-## Visual / Audio Direction
+- COPY THAT? must pass the 2AM Test: it is worth another attempt without an
+  audience, recording, or social reward.
+- It must pass the 10-Second Clip Test: a newcomer can quickly understand the
+  danger, the communication or execution, and the payoff.
+- Player legibility, spectator legibility, streamer usability, conversation
+  clarity, and clip potential are considered from the first representative
+  prototype.
+- Protect facecam-safe and OBS-friendly layouts without weakening either role.
+- Preserve semantic Moment events and replay markers so later systems can find
+  starts, commitments, reversals, saves, contacts, DNFs, and finishes.
+- Contracts, Hardcore, role swaps, seeded/shareable challenges, visible
+  ATTEMPT #N, and "stay together / one more race" are core long-form directions.
+- Highest stakes may reset a whole Contract after one DNF only when the failure
+  remains fair and understood.
+- Creator features amplify genuine play; they never replace the 2AM Test with
+  scripted clip farming.
 
-- Aim for polished stylized Formula motorsport, never Minecraft, Roblox, or test-map placeholder quality.
-- Use a Formula cockpit/onboard view with halo, nose, and front-wheel cues plus real high-speed visual pressure.
-- Halo and occlusion support Formula identity and information asymmetry, not artificial blindness for its own sake.
-- Use an original fictional circuit informed by real circuit-design grammar—no random spline blobs and no ripped official track or brand assets.
-- The Formula car must read as a sleek single-seater, not stacked primitive boxes.
-- Audio is gameplay information: layered engine, wind, tire, curb, radio, impacts, and stress/release cues.
-- Camera and visual stress represent actual car state. Avoid arbitrary G-force red screens; reserve danger treatment for genuine critical states and impacts.
+## Platform and architecture law
 
-## AI Relationship / Progression
+- Steam PC is the primary commercial product and architecture target.
+- The existing Web/Three.js build is research evidence, a disposable harness,
+  and a possible later demo. Browser, Netlify, or hackathon constraints do not
+  define production.
+- No production engine is selected. Godot C#, Unity C#, or another candidate
+  must earn the choice through equivalent product-specific spikes.
+- Simulation/physics, rendering, UI, networking, voice, AI, replay, and Steam
+  integrations keep explicit boundaries. Presentation cannot secretly become a
+  second race authority.
+- Deterministic high-level actions, events, reason codes, and reproducible traces
+  are valuable when they support fairness, debugging, replay, and migration.
+  Existing TypeScript syntax is not itself a product asset.
+- Existing work has no preservation rights. Only evidence and product value do.
 
-- Progression is team chemistry, not a visible Trust meter.
-- Driver dialogue reflects deterministic history: late calls, perfect calls, saves, DNF causes, attempt number, and overtakes.
-- Through behavior and dialogue, the Driver can become trusting, skeptical, sarcastic, relieved, or confident without affecting fairness unpredictably.
+## Falsification and evidence
 
-## Falsification / Evidence Rules
+Reject or revise a hypothesis when:
 
-Reject or revise design hypotheses when playtest evidence contradicts them:
+- Human×Human play does not create more meaningful agency than silent or
+  shared-information controls.
+- Either role can consistently solve the representative race alone.
+- Driver control feels like a rail, a QTE, or execution without a skill ceiling.
+- Engineer play becomes command clicking, answer reading, or passive camera
+  watching.
+- Voice adds friction but not collaboration, and accessible alternatives cannot
+  preserve participation.
+- Players attribute failure mainly to latency, UI confusion, randomness, bad
+  translation, or hidden rules.
+- Online play cannot keep Driver control responsive and consequences fair.
+- A second attempt shows no learning, adaptation, or desire to coordinate again.
+- A blind observer cannot explain a representative 10-second moment.
+- Visual/audio polish produces screenshots but not clearer play.
+- The game fails the 2AM Test.
 
-- Voice fails if it feels no more collaborative than text or buttons.
-- Engineer necessity fails if no-input play can complete the intended run or objective.
-- Engineer skill fails if players merely read answers from the UI.
-- Timing fails if shifting calls materially in time has little consequence.
-- AI relationship fails if disabling Driver dialogue barely changes the experience.
-- Difficulty fails if players blame STT, UI confusion, or randomness more than their judgment.
-- Replayability fails if the exact event sequence becomes predictable after only a few runs.
-- Streamability fails if a newcomer cannot understand a 10-second clip.
-- Core fun fails if the 2AM Test fails.
-- Information asymmetry fails if one side's screen contains all needed information.
-- Visual fantasy fails if screenshots still read as a WebGL test scene.
+Evidence order:
 
-Evidence hierarchy:
+1. This North Star and explicit product direction.
+2. Actual representative Human×Human play and observed behavior.
+3. Measured prototype traces, latency, input, replay, and role-information
+   evidence.
+4. Strong relevant first-party or practitioner research.
+5. Individual opinion.
+6. Tool, skill, engine, plugin, or model preference.
 
-1. North Star and product thesis.
-2. Actual full-run playtests and observed player or spectator behavior.
-3. Strong relevant game-design, research, or reference evidence.
-4. Individual subjective opinion.
-5. Tool, skill, or model taste.
+## Drift alarms
 
-No plugin, skill, model, or agent silently outranks the North Star or real playtest evidence.
+Stop and re-check direction if the project becomes:
 
-## Platform Strategy
+- AI-first or Engineer-only by default;
+- a button-first command deck or normal-play typed chat;
+- direct driving with an ornamental Engineer;
+- an all-knowing Engineer dashboard or answer-giving assistant;
+- a Driver who succeeds without useful Engineer information;
+- a deliberately incompetent AI or human role created only to force calls;
+- spline/rail driving presented as the production vehicle;
+- random event chaos, scripted scenario stitching, or empty laps;
+- constant chatter with no listening, silence, or recovery;
+- a generic SaaS UI around a racing view;
+- a provider demo, networking demo, or engine demo without product evidence;
+- creator-only spectacle that fails the 2AM Test;
+- full content, backend, realism, or polish before the next risk is proven;
+- preservation of legacy code because it already exists.
 
-- **Platform-agnostic core, Steam-first full product, Web-first discovery and prototyping.**
-- Web is not the final technical ceiling. It validates the communication and DDD core, offers instant access, and can later become a viral demo and acquisition surface.
-- The long-term commercial target is native PC/Steam for stronger graphics, audio, input and hardware integration, and multiplayer.
-- Do not rewrite immediately in another engine before core fun is proven.
-- The web vertical slice must prove voice conversation fun, fair Engineer necessity, fun pressure difficulty, meaningful Driver relationship, failures that create retry desire, overtaking/feint mastery, and clips that make viewers want to try.
-- If blind playtests repeatedly produce spontaneous “one more run” or “is there a harder one?” behavior, run a short native-engine technical spike—such as Godot versus Unity or another suitable stack—to choose the Steam production path.
-- Long-term flywheel: viral browser demo → Steam wishlist/demo/full game → creator clips → new players.
+## Feature decision test
 
-## Long-Term Product Flywheel
+Before a feature or technical commitment:
 
-**Great gameplay → genuine streamer/player reaction → clip → viewer immediately understands the hook → browser demo/Steam → own race story → new clips → repeat.**
-
-Long-term directions include Contracts/Hardcore, attempt counters, seeded/shareable challenges, Human Driver × Human Engineer Duo, role swap, creator replay/Moment Engine, and audience-selected challenge modifiers that set challenges without arbitrarily sabotaging gameplay.
-
-## Drift Alarms
-
-Treat the project as drifting if it becomes:
-
-- button-first racing command UI
-- voice that is merely buttons spoken aloud
-- a generic race-engineer spreadsheet simulator
-- a direct-driving racing game at its core
-- a freeform chatbot glued onto a racing prototype
-- a Driver who succeeds without Engineer contribution
-- a Driver made intentionally dumb just to force commands
-- random-event chaos without causal responsibility
-- a scripted event carousel with little state interaction
-- empty laps with sparse communication
-- UI that gives answers rather than evidence
-- AI constantly talking over racing
-- streamer-only spectacle that fails the 2AM Test
-- visual polish that does not serve communication, tension, or readability
-- conservative prototype preservation that blocks necessary redesign
-- a latest-technology showcase with weak gameplay
-- a premature native-engine rewrite before core fun is proven
-
-## Feature Decision Test
-
-Before every major feature, ask:
-
-1. Does it strengthen communicating with the Driver under racing pressure?
-2. Does it create meaningful judgment, relationship, tension/release, mastery, or retellable consequence?
-3. Is player agency clear?
-4. Does it strengthen Driver/Engineer complementarity?
+1. Which role fantasy and verb does it strengthen?
+2. Which expensive product risk does it reduce?
+3. Does it deepen complementary information and real communication?
+4. Does it preserve direct Driver execution and Engineer judgment?
 5. Does it improve both PLAY and WATCH?
-6. Does it pass both 2AM and 10-Second Clip logic?
-7. Is it worth its complexity versus improving the current core?
+6. Does it support hard-but-legible mastery and fair consequence?
+7. Can a cheaper test answer the same question?
+8. If it fails, what reusable evidence remains?
+9. Is it being protected only because it already exists?
 
-If the answers are mostly no, reject or backlog it.
+If the answer is weak, reject, defer, or redesign the experiment.

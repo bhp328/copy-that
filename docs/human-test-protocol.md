@@ -1,5 +1,17 @@
 # COPY THAT? — M2 Human-Test Protocol
 
+> [!WARNING]
+> **SUPERSEDED / HISTORICAL — 2026-09-03**
+>
+> This frozen protocol remains useful evidence for the previous AI Driver/Web
+> M2 slice. It is not the current product gate, does not precede all native risk
+> work, and cannot validate the online Human Driver × Human Engineer flagship.
+> Use the staged Human×Human risk prototypes in
+> [Pre-production Plan](./preproduction-plan.md) and the current thresholds in
+> [Technical Decision Gates](./technical-decision-gates.md). Do not mix new
+> flagship data into this old cohort or reinterpret its pending scorecard as
+> Steam product proof.
+
 Date frozen: 2026-09-03
 
 Authority baseline: `5a98f95`, Checkpoint deterministic M2 encounter slice
